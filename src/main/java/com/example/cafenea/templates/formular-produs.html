@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Adaugă Produs</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px;">
+<h2>Adăugare Produs Nou în Meniu</h2>
+
+<form th:action="@{/produse/salveaza}" th:object="${produs}" method="post" style="width: 400px;">
+    <div style="margin-bottom: 15px;">
+        <label>Nume Produs:</label><br/>
+        <input type="text" th:field="*{nume}" style="width: 100%;"/>
+        <p th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" style="color: red; margin: 5px 0 0 0; font-size: 14px;"></p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label>Preț (RON):</label><br/>
+        <input type="number" step="0.1" th:field="*{pret}" style="width: 100%;"/>
+        <p th:if="${#fields.hasErrors('pret')}" th:errors="*{pret}" style="color: red; margin: 5px 0 0 0; font-size: 14px;"></p>
+    </div>
+
+    <button type="submit" style="padding: 6px 20px; background-color: green; color: white; border: none; cursor: pointer;">Salvează Produsul</button>
+    <a href="/produse" style="margin-left: 15px;">Anulează</a>
+</form>
+</body>
+</html>

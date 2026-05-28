@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Meniu Cafenea</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px;">
+<h2>Meniu Produse Cafenea</h2>
+<p>Utilizator logat: <b sec:authentication="name" style="color: blue;">User</b>
+    (Rol: <span sec:authentication="principal.authorities">ROL</span>)</p>
+
+<a href="/produse/nou" style="font-weight: bold;">+ Adaugă Produs Nou</a> |
+<a href="/logout" style="color: red;">Deconectare</a>
+<br/><br/>
+
+<table border="1" cellpadding="8" style="border-collapse: collapse; width: 600px;">
+    <thead style="background-color: #f2f2f2;">
+    <tr>
+        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id')}">ID (Sortează)</a></th>
+        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume')}">Denumire Produs (Sortează)</a></th>
+        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret')}">Preț (Sortează)</a></th>
+        <th>Acțiuni</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p : ${listaProduse}">
+        <td th:text="${p.id}">1</td>
+        <td th:text="${p.nume}">Espresso</td>
+        <td th:text="${p.pret} + ' RON'">15 RON</td>
+        <td>
+                    <span sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
+                           th:onclick="return confirm('Sigur vrei să ștergi acest produs?')"
+                           style="color: red;">Șterge</a>
+                    </span>
+            <span sec:authorize="!hasRole('ADMIN')" style="color: gray; font-style: italic;">
+                        Fără permisiune ștergere
+                    </span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div style="margin-top: 20px;" th:if="${totalPagini > 0}">
+    <span>Pagini: </span>
+    <span th:each="i : ${#numbers.sequence(0, totalPagini - 1)}">
+            <a th:href="@{/produse(pagina=${i},sortare=${sortare})}" th:text="${i + 1}"
+               th:style="${paginaCurenta == i} ? 'font-weight:bold; margin-right:15px; text-decoration:none; color:black;' : 'margin-right:15px;'">1</a>
+        </span>
+</div>
+</body>
+</html>
