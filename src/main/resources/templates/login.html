@@ -3,21 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - CafeApp</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 </head>
-<body style="font-family: Arial, sans-serif; margin: 50px;">
-<h2>Autentificare Sistem Cafenea</h2>
+<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
 
-<div th:if="${param.error}" style="color:red; margin-bottom:15px;">Utilizator sau parolă incorectă!</div>
-<div th:if="${param.logout}" style="color:green; margin-bottom:15px;">Te-ai deconectat cu succes.</div>
+<div class="card shadow-lg p-4" style="width: 400px; border-radius: 15px;">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-dark">☕ CafeApp</h2>
+        <p class="text-muted">Gestiune Sistem Cafenea</p>
+    </div>
 
-<form action="/login" method="post" style="border: 1px solid #ccc; padding: 20px; width: 300px;">
-    <label>Utilizator:</label><br/>
-    <input type="text" name="username" style="width: 100%; margin-bottom: 10px;" required/><br/>
+    <div th:if="${param.error}" class="alert alert-danger py-2 text-center" role="alert">
+        Utilizator sau parolă incorectă!
+    </div>
+    <div th:if="${param.logout}" class="alert alert-success py-2 text-center" role="alert">
+        Te-ai deconectat cu succes.
+    </div>
 
-    <label>Parolă:</label><br/>
-    <input type="password" name="password" style="width: 100%; margin-bottom: 20px;" required/><br/>
+    <form action="/login" method="post">
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Utilizator</label>
+            <input type="text" name="username" class="form-control" placeholder="ex: ospatar sau manager" required/>
+        </div>
 
-    <button type="submit" style="padding: 5px 15px;">Conectare</button>
-</form>
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Parolă</label>
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 fw-bold py-2" style="border-radius: 8px;">Conectare</button>
+    </form>
+</div>
+
 </body>
 </html>

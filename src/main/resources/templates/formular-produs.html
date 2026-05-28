@@ -3,25 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Adaugă Produs</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 </head>
-<body style="font-family: Arial, sans-serif; margin: 40px;">
-<h2>Adăugare Produs Nou în Meniu</h2>
+<body class="bg-light">
 
-<form th:action="@{/produse/salveaza}" th:object="${produs}" method="post" style="width: 400px;">
-    <div style="margin-bottom: 15px;">
-        <label>Nume Produs:</label><br/>
-        <input type="text" th:field="*{nume}" style="width: 100%;"/>
-        <p th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" style="color: red; margin: 5px 0 0 0; font-size: 14px;"></p>
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow-sm p-4 rounded-4 bg-white">
+        <h4 class="fw-bold text-dark mb-4 text-center">Adăugare Produs Nou</h4>
+
+        <form th:action="@{/produse/salveaza}" th:object="${produs}" method="post">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Nume Produs</label>
+                <input type="text" th:field="*{nume}" class="form-control" placeholder="ex: Caffè Latte" />
+                <div th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" class="text-danger small mt-1 fw-medium"></div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Preț (RON)</label>
+                <input type="number" step="0.1" th:field="*{pret}" class="form-control" placeholder="0.00" />
+                <div th:if="${#fields.hasErrors('pret')}" th:errors="*{pret}" class="text-danger small mt-1 fw-medium"></div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success w-100 fw-bold py-2">Salvează Produsul</button>
+                <a href="/produse" class="btn btn-light border w-100 fw-semibold py-2">Anulează</a>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div style="margin-bottom: 20px;">
-        <label>Preț (RON):</label><br/>
-        <input type="number" step="0.1" th:field="*{pret}" style="width: 100%;"/>
-        <p th:if="${#fields.hasErrors('pret')}" th:errors="*{pret}" style="color: red; margin: 5px 0 0 0; font-size: 14px;"></p>
-    </div>
-
-    <button type="submit" style="padding: 6px 20px; background-color: green; color: white; border: none; cursor: pointer;">Salvează Produsul</button>
-    <a href="/produse" style="margin-left: 15px;">Anulează</a>
-</form>
 </body>
 </html>

@@ -3,50 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>Meniu Cafenea</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 </head>
-<body style="font-family: Arial, sans-serif; margin: 40px;">
-<h2>Meniu Produse Cafenea</h2>
-<p>Utilizator logat: <b sec:authentication="name" style="color: blue;">User</b>
-    (Rol: <span sec:authentication="principal.authorities">ROL</span>)</p>
+<body class="bg-light">
 
-<a href="/produse/nou" style="font-weight: bold;">+ Adaugă Produs Nou</a> |
-<a href="/logout" style="color: red;">Deconectare</a>
-<br/><br/>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/produse">☕ CafeApp Dashboard</a>
+        <div class="d-flex align-items-center text-white">
+                <span class="me-3">
+                    Conectat ca: <strong class="text-info" sec:authentication="name">User</strong>
+                    (<span class="badge bg-secondary" sec:authentication="principal.authorities">ROL</span>)
+                </span>
+            <a href="/logout" class="btn btn-outline-danger btn-sm">Deconectare</a>
+        </div>
+    </div>
+</nav>
 
-<table border="1" cellpadding="8" style="border-collapse: collapse; width: 600px;">
-    <thead style="background-color: #f2f2f2;">
-    <tr>
-        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id')}">ID (Sortează)</a></th>
-        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume')}">Denumire Produs (Sortează)</a></th>
-        <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret')}">Preț (Sortează)</a></th>
-        <th>Acțiuni</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p : ${listaProduse}">
-        <td th:text="${p.id}">1</td>
-        <td th:text="${p.nume}">Espresso</td>
-        <td th:text="${p.pret} + ' RON'">15 RON</td>
-        <td>
-                    <span sec:authorize="hasRole('ADMIN')">
-                        <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
-                           th:onclick="return confirm('Sigur vrei să ștergi acest produs?')"
-                           style="color: red;">Șterge</a>
-                    </span>
-            <span sec:authorize="!hasRole('ADMIN')" style="color: gray; font-style: italic;">
-                        Fără permisiune ștergere
-                    </span>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<div class="container bg-white p-4 rounded shadow-sm" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold m-0 text-dark">Meniu Produse</h3>
+        <a href="/produse/nou" class="btn btn-success fw-bold">+ Adaugă Produs Nou</a>
+    </div>
 
-<div style="margin-top: 20px;" th:if="${totalPagini > 0}">
-    <span>Pagini: </span>
-    <span th:each="i : ${#numbers.sequence(0, totalPagini - 1)}">
-            <a th:href="@{/produse(pagina=${i},sortare=${sortare})}" th:text="${i + 1}"
-               th:style="${paginaCurenta == i} ? 'font-weight:bold; margin-right:15px; text-decoration:none; color:black;' : 'margin-right:15px;'">1</a>
-        </span>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle border text-center">
+            <thead class="table-dark">
+            <tr>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id')}" class="text-white text-decoration-none text-nowrap">ID ⇅</a></th>
+                <th class="text-start"><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume')}" class="text-white text-decoration-none">Denumire Produs ⇅</a></th>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret')}" class="text-white text-decoration-none">Preț ⇅</a></th>
+                <th>Acțiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${listaProduse}">
+                <td th:text="${p.id}" class="fw-bold text-muted">1</td>
+                <td th:text="${p.nume}" class="text-start fw-semibold">Espresso</td>
+                <td th:text="${p.pret} + ' RON'" class="text-success fw-bold">15 RON</td>
+                <td>
+                            <span sec:authorize="hasRole('ADMIN')">
+                                <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
+                                   th:onclick="return confirm('Sigur vrei să ștergi acest produs?')"
+                                   class="btn btn-sm btn-danger">Șterge</a>
+                            </span>
+                    <span sec:authorize="!hasRole('ADMIN')" class="text-muted small justify-content-center italic">
+                                <span class="badge bg-light text-dark border">Doar vizualizare</span>
+                            </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4" th:if="${totalPagini > 0}">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPagini - 1)}"
+                    th:classappend="${paginaCurenta == i} ? 'active' : ''">
+                    <a class="page-link" th:href="@{/produse(pagina=${i},sortare=${sortare})}" th:text="${i + 1}">1</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
+
 </body>
 </html>
