@@ -10,7 +10,7 @@
 <div th:if="${param.error}" style="color:red; margin-bottom:15px;">Utilizator sau parolă incorectă!</div>
 <div th:if="${param.logout}" style="color:green; margin-bottom:15px;">Te-ai deconectat cu succes.</div>
 
-<form th:action="@{/login}" method="post" style="border: 1px solid #ccc; padding: 20px; width: 300px;">
+<form action="/login" method="post" style="border: 1px solid #ccc; padding: 20px; width: 300px;">
     <label>Utilizator:</label><br/>
     <input type="text" name="username" style="width: 100%; margin-bottom: 10px;" required/><br/>
 

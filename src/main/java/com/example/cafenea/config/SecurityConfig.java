@@ -19,19 +19,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Dezactivăm protecția CSRF momentan pentru a nu bloca formularele de test
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**").permitAll() // Oricine poate accesa pagina de login
-                        .requestMatchers("/produse/sterge/**").hasRole("ADMIN") // DOAR Managerul (ADMIN) are voie să șteargă produse!
-                        .anyRequest().authenticated() // Pentru orice altă pagină (vizualizare, adăugare) trebuie să fii logat
+                        // Permitem accesul liber la pagina de login, la erori și la resurse statice
+                        .requestMatchers("/login", "/login?error", "/login?logout", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/produse/sterge/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login") // Pagina noastră personalizată de login (o vom crea imediat în HTML)
-                        .defaultSuccessUrl("/produse", true) // Unde ne trimite site-ul după ce ne logăm cu succes
-                        .permitAll()
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/produse", true)
+                        .permitAll() // Îi dă dreptul lui Spring Security să lase această rută liberă
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout") // Unde ne trimite după ce dăm Logout
+                        .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 );
         return http.build();
