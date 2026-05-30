@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container d-flex justify-content-center mt-5">
+    <div class="card p-4 border-0 glass-card animate__animated animate__fadeInUp" style="width: 100%; max-width: 450px;">
+
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-dark">🔑 Schimbare Parolă</h3>
+            <p class="text-muted small">Actualizează credențialele contului tău curent</p>
+        </div>
+
+        <div th:if="${eroare}" class="alert alert-danger text-center py-2 small animate__animated animate__shakeX" th:text="${eroare}">
+            Eroare text.
+        </div>
+
+        <div th:if="${succes}" class="alert alert-success text-center py-2 small animate__animated animate__bounceIn" th:text="${succes}">
+            Succes text.
+        </div>
+
+        <form th:action="@{/schimbare-parola}" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary">Parola Actuală</label>
+                <input type="password" name="parolaActuala" class="form-control shadow-sm" placeholder="Introduceți parola curentă" required />
+            </div>
+
+            <hr class="text-muted my-3">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary">Noua Parolă</label>
+                <input type="password" name="parolaNoua" class="form-control shadow-sm" placeholder="Minim 6 caractere" required />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-secondary">Confirmă Noua Parolă</label>
+                <input type="password" name="confirmaParolaNoua" class="form-control shadow-sm" placeholder="Reintroduceți noua parolă" required />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold py-2 btn-animate shadow-sm">
+                    Modifică Parola
+                </button>
+                <a href="/" class="btn btn-light border px-3 py-2 btn-animate fw-medium">
+                    Anulează
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,89 +1,92 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <title>Meniu Cafenea</title>
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-</head>
-<body class="bg-light">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container p-4 bg-white rounded-4 shadow-sm animate__animated animate__fadeIn" style="max-width: 1000px;">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/produse">☕ CafeApp Dashboard</a>
-        <div class="d-flex align-items-center text-white">
-                <span class="me-3">
-                    Conectat ca: <strong class="text-info" sec:authentication="name">User</strong>
-                    (<span class="badge bg-secondary" sec:authentication="principal.authorities">ROL</span>)
-                </span>
-            <a href="/logout" class="btn btn-outline-danger btn-sm">Deconectare</a>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active fw-bold px-4 shadow-sm" href="/produse">📦 Catalog Produse</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold px-4 text-secondary" href="/categorii">📁 Categorii Meniu</a>
+            </li>
+        </ul>
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3">Ieșire 🚪</button>
+        </form>
     </div>
-</nav>
-
-<div class="container bg-white p-4 rounded shadow-sm" style="max-width: 900px;">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold m-0 text-dark">Meniu Produse</h3>
-        <a href="/produse/nou" class="btn btn-success fw-bold">+ Adaugă Produs Nou</a>
+        <div>
+            <h3 class="fw-bold text-dark m-0">📋 Catalog Produse</h3>
+            <p class="text-muted small m-0">Gestiunea stocurilor și a prețurilor</p>
+        </div>
+        <div sec:authorize="hasRole('ADMIN')">
+            <a href="/produse/nou" class="btn btn-success fw-bold btn-animate shadow-sm px-4">+ Adaugă Produs</a>
+        </div>
     </div>
 
-    <form th:action="@{/produse}" method="get" class="row g-2 mb-4">
+    <form th:action="@{/produse}" method="get" class="row g-2 mb-4 bg-light p-3 rounded-3 border">
         <input type="hidden" name="sortare" th:value="${sortare}" />
-
         <div class="col-md-9">
             <input type="text" name="cautare" th:value="${cautare}" class="form-control"
-                   placeholder="Caută un produs după nume... (ex: Paine, Espresso)" />
+                   placeholder="Scrie denumirea produsului căutat... (ex: Espresso)" />
         </div>
         <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100 fw-bold">Caută</button>
-            <a href="/produse" class="btn btn-light border">Reset</a>
+            <button type="submit" class="btn btn-primary w-100 fw-bold btn-animate">Caută</button>
+            <a href="/produse" class="btn btn-outline-secondary px-3">Reset</a>
         </div>
     </form>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle border text-center">
+    <div class="table-responsive rounded-3 border">
+        <table class="table table-hover align-middle text-center m-0">
             <thead class="table-dark">
             <tr>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id',cautare=${cautare})}" class="text-white text-decoration-none text-nowrap">ID ⇅</a></th>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id',cautare=${cautare})}" class="text-white text-decoration-none">ID ⇅</a></th>
                 <th class="text-start"><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume',cautare=${cautare})}" class="text-white text-decoration-none">Denumire Produs ⇅</a></th>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret',cautare=${cautare})}" class="text-white text-decoration-none">Preț ⇅</a></th>
-                <th>Acțiuni</th>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret',cautare=${cautare})}" class="text-white text-decoration-none">Preț Unitar ⇅</a></th>
+                <th>Acțiuni disponibile</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="p : ${listaProduse}">
+            <tr th:each="p : ${listaProduse}" class="animate__animated animate__fadeInUp">
                 <td th:text="${p.id}" class="fw-bold text-muted">1</td>
-                <td th:text="${p.nume}" class="text-start fw-semibold">Espresso</td>
-                <td th:text="${p.pret} + ' RON'" class="text-success fw-bold">15 RON</td>
+                <td th:text="${p.nume}" class="text-start fw-semibold text-dark">Cafea Latte</td>
+                <td th:text="${p.pret} + ' RON'" class="text-success fw-bold">14.5 RON</td>
                 <td>
-                            <span sec:authorize="hasRole('ADMIN')">
-                                <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
-                                   th:onclick="return confirm('Sigur vrei să ștergi acest produs?')"
-                                   class="btn btn-sm btn-danger">Șterge</a>
-                            </span>
-                    <span sec:authorize="!hasRole('ADMIN')" class="text-muted small justify-content-center">
-                                <span class="badge bg-light text-dark border">Doar vizualizare</span>
-                            </span>
+                    <div sec:authorize="hasRole('ADMIN')" class="d-flex justify-content-center gap-1">
+                        <a th:href="@{/produse/editeaza/{id}(id=${p.id})}"
+                           class="btn btn-sm btn-warning px-3 fw-bold shadow-sm">Editează</a>
+
+                        <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
+                           th:onclick="return confirm('Sunteți sigur că doriți ștergerea definitivă a produsului?')"
+                           class="btn btn-sm btn-danger px-3 fw-medium btn-animate shadow-sm">Elimină</a>
+                    </div>
+                    <div sec:authorize="!hasRole('ADMIN')">
+                        <span class="badge bg-light text-muted border px-3 py-1">Doar vizualizare</span>
+                    </div>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(listaProduse)}">
-                <td colspan="4" class="text-muted py-4">Niciun produs nu se potrivește căutării tale.</td>
+                <td colspan="4" class="text-muted py-4">Nu am găsit niciun produs conform criteriilor tale.</td>
             </tr>
             </tbody>
         </table>
     </div>
 
-    <div class="d-flex justify-content-center mt-4" th:if="${totalPagini > 0}">
+    <div class="d-flex justify-content-center mt-4" th:if="${totalPagini > 1}">
         <nav>
-            <ul class="pagination">
+            <ul class="pagination shadow-sm mb-0">
                 <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPagini - 1)}"
                     th:classappend="${paginaCurenta == i} ? 'active' : ''">
-                    <a class="page-link" th:href="@{/produse(pagina=${i},sortare=${sortare},cautare=${cautare})}" th:text="${i + 1}">1</a>
+                    <a class="page-link px-3 fw-bold" th:href="@{/produse(pagina=${i},sortare=${sortare},cautare=${cautare})}" th:text="${i + 1}">1</a>
                 </li>
             </ul>
         </nav>
     </div>
 </div>
-
 </body>
 </html>

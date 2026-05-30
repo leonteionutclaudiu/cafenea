@@ -2,36 +2,55 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Adaugă Produs</title>
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <title>Editare Produs - Cafenea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .form-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
 </head>
-<body class="bg-light">
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 form-card p-4">
+            <h2 class="text-center mb-4 text-dark fw-bold">☕ Gestionare Produs</h2>
 
-<div class="container mt-5" style="max-width: 500px;">
-    <div class="card shadow-sm p-4 rounded-4 bg-white">
-        <h4 class="fw-bold text-dark mb-4 text-center">Adăugare Produs Nou</h4>
+            <form th:action="@{/produse/salveaza}" th:object="${produs}" method="post">
 
-        <form th:action="@{/produse/salveaza}" th:object="${produs}" method="post">
+                <input type="hidden" th:field="*{id}" />
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Nume Produs</label>
-                <input type="text" th:field="*{nume}" class="form-control" placeholder="ex: Caffè Latte" />
-                <div th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" class="text-danger small mt-1 fw-medium"></div>
-            </div>
+                <div class="mb-3">
+                    <label for="nume" class="form-label fw-medium">Denumire Produs</label>
+                    <input type="text" th:field="*{nume}" id="nume"
+                           class="form-control" th:classappend="${#fields.hasErrors('nume')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}"></div>
+                </div>
 
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Preț (RON)</label>
-                <input type="number" step="0.1" th:field="*{pret}" class="form-control" placeholder="0.00" />
-                <div th:if="${#fields.hasErrors('pret')}" th:errors="*{pret}" class="text-danger small mt-1 fw-medium"></div>
-            </div>
+                <div class="mb-3">
+                    <label for="pret" class="form-label fw-medium">Preț (RON)</label>
+                    <input type="number" step="0.5" th:field="*{pret}" id="pret"
+                           class="form-control" th:classappend="${#fields.hasErrors('pret')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('pret')}" th:errors="*{pret}"></div>
+                </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success w-100 fw-bold py-2">Salvează Produsul</button>
-                <a href="/produse" class="btn btn-light border w-100 fw-semibold py-2">Anulează</a>
-            </div>
-        </form>
+                <div class="mb-4">
+                    <label for="categorie" class="form-label fw-medium">Categorie</label>
+                    <select th:field="*{categorie}" id="categorie"
+                            class="form-select" th:classappend="${#fields.hasErrors('categorie')} ? 'is-invalid' : ''">
+                        <option value="">-- Selectați o categorie --</option>
+                        <option th:each="cat : ${categorii}" th:value="${cat.id}" th:text="${cat.denumire}"></option>
+                    </select>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('categorie')}" th:errors="*{categorie}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success w-100 fw-bold">💾 Salvează Modificările</button>
+                    <a href="/produse" class="btn btn-secondary w-50 fw-bold">Anulează</a>
+                </div>
+            </form>
+
+        </div>
     </div>
 </div>
-
 </body>
 </html>

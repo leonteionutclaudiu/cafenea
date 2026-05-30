@@ -2,6 +2,7 @@ package com.example.cafenea.controller;
 
 import com.example.cafenea.model.Produs;
 import com.example.cafenea.service.ProdusService;
+import com.example.cafenea.repository.CategorieProdusRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,24 +11,22 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+
 @Controller
 public class ProdusController {
 
     @Autowired
     private ProdusService produsService;
 
-    // Ruta pentru pagina personalizată de Login
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
+    @Autowired
+    private CategorieProdusRepository categorieProdusRepository;
 
-    // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare (Cerința 7)
+    // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare
     @GetMapping("/produse")
     public String listeazaProduse(Model model,
                                   @RequestParam(defaultValue = "0") int pagina,
                                   @RequestParam(defaultValue = "nume") String sortare,
-                                  @RequestParam(required = false) String cautare) { // Parametru nou pentru căutare
+                                  @RequestParam(required = false) String cautare) {
 
         Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare, cautare);
 
@@ -35,7 +34,7 @@ public class ProdusController {
         model.addAttribute("paginaCurenta", pagina);
         model.addAttribute("totalPagini", paginaProduse.getTotalPages());
         model.addAttribute("sortare", sortare);
-        model.addAttribute("cautare", cautare); // Îl trimitem înapoi în HTML ca să rămână scris în căsuță
+        model.addAttribute("cautare", cautare);
         return "produse";
     }
 
@@ -43,20 +42,32 @@ public class ProdusController {
     @GetMapping("/produse/nou")
     public String formularProdusNou(Model model) {
         model.addAttribute("produs", new Produs());
-        return "formular-produs"; // Va căuta fișierul formular-produs.html
+        model.addAttribute("categorii", categorieProdusRepository.findAll());
+        return "formular-produs";
     }
 
-    // Ruta care salvează produsul și verifică validările server-side (Cerința 5 - Views & Validation)
+    // REPARAT: Am înlocuit „...” cu obiectul real produsExistent
+    @GetMapping("/produse/editeaza/{id}")
+    public String formularEditareProdus(@PathVariable Long id, Model model) {
+        Produs produsExistent = produsService.getProdusDupaId(id);
+
+        model.addAttribute("produs", produsExistent); // Tritem obiectul extras din DB
+        model.addAttribute("categorii", categorieProdusRepository.findAll()); // Trimitem categoriile pentru dropdown
+        return "formular-produs";
+    }
+
+    // Ruta POST care salvează modificările sau adaugă produsul nou
     @PostMapping("/produse/salveaza")
-    public String salveazaProdus(@Valid @ModelAttribute("produs") Produs produs, BindingResult result) {
+    public String salveazaProdus(@Valid @ModelAttribute("produs") Produs produs, BindingResult result, Model model) {
         if (result.hasErrors()) {
-            return "formular-produs"; // Dacă prețul e < 1 sau numele e gol, reîncărcăm formularul cu erori
+            model.addAttribute("categorii", categorieProdusRepository.findAll());
+            return "formular-produs";
         }
         produsService.salveazaProdus(produs);
-        return "redirect:/produse"; // După salvare, ne întoarcem la tabelul cu produse
+        return "redirect:/produse";
     }
 
-    // Ruta pentru ștergerea unui produs (Securizată în SecurityConfig doar pentru ADMIN)
+    // Ruta pentru ștergerea unui produs
     @GetMapping("/produse/sterge/{id}")
     public String stergeProdus(@PathVariable Long id) {
         produsService.stergeProdus(id);

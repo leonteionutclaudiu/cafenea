@@ -64,4 +64,9 @@ public class ProdusService {
             throw new IllegalArgumentException("Produsul cu ID-ul " + id + " nu a fost gasit in baza de date.");
         }
     }
+
+    public Produs getProdusDupaId(Long id) {
+        return produsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produsul cu ID-ul " + id + " nu există!"));
+    }
 }

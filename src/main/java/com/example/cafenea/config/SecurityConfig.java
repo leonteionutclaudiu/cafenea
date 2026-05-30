@@ -1,13 +1,17 @@
 package com.example.cafenea.config;
 
+import com.example.cafenea.model.Utilizator;
+import com.example.cafenea.repository.UtilizatorRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,52 +20,104 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // 1. Serviciul de utilizatori care interoghează tabela ta din PostgreSQL
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public UserDetailsService userDetailsService(UtilizatorRepository utilizatorRepository) {
+        return username -> utilizatorRepository.findByUsername(username)
+                .map(u -> User.withUsername(u.getUsername())
+                        .password(u.getPassword())
+                        .roles(u.getRol()) // Adaugă prefixul "ROLE_" automat
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("Utilizatorul cu username-ul " + username + " nu există!"));
+    }
+
+    // 2. PasswordEncoder-ul unic bazat pe algoritmul BCrypt
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // 3. REPARAT: Transmitem userDetailsService direct în constructorul Providerului
+    @Bean
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    // 4. Lanțul principal de filtre de securitate HTTP
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider, UserDetailsService userDetailsService) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Dezactivat pentru teste simple de formulare
+                .csrf(csrf -> {}) // CSRF activ cu regulile implicite
+
+                .authenticationProvider(authenticationProvider)
+
                 .authorizeHttpRequests(auth -> auth
-                        // REGULA 1: Rutele publice (Home, Login, CSS) - sunt complet libere pentru oricine
-                        .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
-
-                        // REGULA 2: Rutele de administrare (doar pentru MANAGER)
-                        .requestMatchers("/produse/sterge/**").hasRole("ADMIN")
-
-                        // REGULA 3: Orice altă rută (ex: /produse) cere să fii logat
+                        .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/register").hasRole("ADMIN")
+                        .requestMatchers("/categorii/**").authenticated() // Oricine este logat poate gestiona categoriile
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/produse", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
+
+                .rememberMe(remember -> remember
+                        .userDetailsService(userDetailsService)
+                        .key("CheieSecretaCafenea2026")
+                        .tokenValiditySeconds(1209600) // 14 zile
+                )
+
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/?logout") // După logout, te trimite înapoi pe Home
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID", "remember-me")
                         .permitAll()
                 );
+
         return http.build();
     }
 
+    // 5. Inițializatorul automat de date (Data Seeding) modificat
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Algoritmul obligatoriu de criptare a parolelor cerut în proiect (BCrypt)
-    }
+    public CommandLineRunner initDatabase(com.example.cafenea.repository.UtilizatorRepository utilizatorRepository,
+                                          com.example.cafenea.repository.CategorieProdusRepository categorieProdusRepository,
+                                          PasswordEncoder passwordEncoder) {
+        return args -> {
+            // 1. Curățare și re-generare utilizator manager
+            utilizatorRepository.deleteAll();
+            System.out.println("⚠️ Sistem de Securitate: Generăm contul curat de Manager...");
+            com.example.cafenea.model.Utilizator managerImplicit = new com.example.cafenea.model.Utilizator();
+            managerImplicit.setUsername("manager");
+            managerImplicit.setPassword(passwordEncoder.encode("manager123"));
+            managerImplicit.setRol("ADMIN");
+            utilizatorRepository.save(managerImplicit);
+            System.out.println("✅ Succes: Cont inițial pregătit!");
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        // Creăm doi utilizatori de test direct în memorie, ca să fie extrem de simplu la prezentarea live
-        UserDetails ospatar = User.withUsername("ospatar")
-                .password(encoder.encode("cafea123")) // Parola va fi salvată criptat
-                .roles("USER") // Rol simplu de angajat
-                .build();
+            // 2. NOU: Generare categorii implicite dacă tabela e goală
+            if (categorieProdusRepository.count() == 0) {
+                System.out.println("⚠️ Bază de date: Tabela de categorii e goală. Generăm categorii implicite...");
 
-        UserDetails manager = User.withUsername("manager")
-                .password(encoder.encode("manager123"))
-                .roles("ADMIN") // Rol de administrator (Manager)
-                .build();
+                com.example.cafenea.model.CategorieProdus c1 = new com.example.cafenea.model.CategorieProdus();
+                c1.setDenumire("Cafea & Specialități");
+                categorieProdusRepository.save(c1);
 
-        return new InMemoryUserDetailsManager(ospatar, manager);
+                com.example.cafenea.model.CategorieProdus c2 = new com.example.cafenea.model.CategorieProdus();
+                c2.setDenumire("Băuturi Răcoritoare");
+                categorieProdusRepository.save(c2);
+
+                com.example.cafenea.model.CategorieProdus c3 = new com.example.cafenea.model.CategorieProdus();
+                c3.setDenumire("Patiserie & Deserturi");
+                categorieProdusRepository.save(c3);
+
+                System.out.println("✅ Succes: S-au generat 3 categorii de produse în baza de date!");
+            }
+        };
     }
 }

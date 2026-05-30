@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container p-4 bg-white rounded-4 shadow-sm animate__animated animate__fadeIn" style="max-width: 1000px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link fw-bold px-4 text-secondary" href="/produse">📦 Catalog Produse</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active fw-bold px-4 shadow-sm" href="/categorii">📁 Categorii Meniu</a>
+            </li>
+        </ul>
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3">Ieșire 🚪</button>
+        </form>
+    </div>
+
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark m-0">📁 Configurare Categorii</h3>
+        <p class="text-muted small m-0">Setați grupele principale din meniul cafenelei (ex: Cafea, Patiserie)</p>
+    </div>
+
+    <div th:if="${param.eroare}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
+        <strong>⚠️ Atenție:</strong> Nu se poate șterge o categorie care are produse asociate! Eliminați sau reasociați mai întâi produsele din această categorie.
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4" sec:authorize="hasRole('ADMIN')">
+            <div class="card p-4 bg-light border rounded-3 shadow-sm">
+                <h5 class="fw-bold text-dark mb-3"
+                    th:text="${categorieNoua.id != null} ? '📝 Editează Categorie' : '➕ Adaugă Categorie'">Adaugă Categorie</h5>
+
+                <form th:action="@{/categorii/salveaza}" th:object="${categorieNoua}" method="post">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <div class="mb-3">
+                        <label for="denumire" class="form-label fw-semibold text-muted small">Denumire Categorie</label>
+                        <input type="text" th:field="*{denumire}" id="denumire" class="form-control bg-white"
+                               required placeholder="ex: Băuturi calde, Ceaiuri" />
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm">💾 Salvează</button>
+                        <a th:if="${categorieNoua.id != null}" href="/categorii" class="btn btn-outline-secondary">Anulează</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div th:class="${#lists.contains(#authentication.authorities.![authority], 'ROLE_ADMIN')} ? 'col-md-8' : 'col-md-12'">            <div class="table-responsive rounded-3 border">
+                <table class="table table-hover align-middle text-center m-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th style="width: 15%">ID</th>
+                        <th class="text-start">Denumire Categorie</th>
+                        <th style="width: 35%" sec:authorize="hasRole('ADMIN')">Acțiuni disponibile</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cat : ${listaCategorii}" class="animate__animated animate__fadeInUp">
+                        <td th:text="${cat.id}" class="fw-bold text-muted">1</td>
+                        <td th:text="${cat.denumire}" class="text-start fw-semibold text-dark">Nume Categorie</td>
+
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <div class="d-flex justify-content-center gap-1">
+                                <a th:href="@{/categorii/editeaza/{id}(id=${cat.id})}"
+                                   class="btn btn-sm btn-warning px-3 fw-bold shadow-sm">Editează</a>
+
+                                <a th:href="@{/categorii/sterge/{id}(id=${cat.id})}"
+                                   th:onclick="return confirm('Sunteți sigur că doriți ștergerea acestei categorii? Toate produsele din ea pot fi afectate.')"
+                                   class="btn btn-sm btn-danger px-3 fw-medium shadow-sm">Elimină</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(listaCategorii)}">
+                        <td colspan="3" class="text-muted py-4">Nu există nicio categorie înregistrată în baza de date.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

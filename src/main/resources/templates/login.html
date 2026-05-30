@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - CafeApp</title>
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-</head>
-<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
-
-<div class="card shadow-lg p-4" style="width: 400px; border-radius: 15px;">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-dark">☕ CafeApp</h2>
-        <p class="text-muted">Gestiune Sistem Cafenea</p>
-    </div>
-
-    <div th:if="${param.error}" class="alert alert-danger py-2 text-center" role="alert">
-        Utilizator sau parolă incorectă!
-    </div>
-    <div th:if="${param.logout}" class="alert alert-success py-2 text-center" role="alert">
-        Te-ai deconectat cu succes.
-    </div>
-
-    <form action="/login" method="post">
-        <div class="mb-3">
-            <label class="form-label fw-semibold">Utilizator</label>
-            <input type="text" name="username" class="form-control" placeholder="ex: ospatar sau manager" required/>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container d-flex justify-content-center mt-5">
+    <div class="card p-4 border-0 glass-card animate__animated animate__backInDown" style="width: 100%; max-width: 400px;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-dark">🔐 Autentificare</h3>
+            <p class="text-muted small">Introduceți contul salvat în baza de date</p>
         </div>
 
-        <div class="mb-4">
-            <label class="form-label fw-semibold">Parolă</label>
-            <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+        <div th:if="${param.error}" class="alert alert-danger text-center py-2 small animate__animated animate__shakeX">
+            Utilizator sau parolă incorectă!
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success text-center py-2 small">
+            Te-ai deconectat cu succes.
+        </div>
+        <div th:if="${param.InregistratCuSucces}" class="alert alert-info text-center py-2 small">
+            Cont creat! Acum vă puteți loga.
         </div>
 
-        <button type="submit" class="btn btn-dark w-100 fw-bold py-2" style="border-radius: 8px;">Conectare</button>
-    </form>
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary">Nume Utilizator</label>
+                <input type="text" name="username" class="form-control form-control-lg fs-6" placeholder="ex: manager" required />
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-secondary">Parolă</label>
+                <input type="password" name="password" class="form-control form-control-lg fs-6" placeholder="••••••••" required />
+            </div>
+            <div class="mb-3 form-check text-start">
+                <input type="checkbox" name="remember-me" id="rememberMe" class="form-check-input">
+                <label class="form-check-label text-secondary small fw-medium" for="rememberMe">Ține-mă minte (14 zile)</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 btn-animate shadow-sm fs-5">Conectare</button>
+        </form>
+    </div>
 </div>
-
 </body>
 </html>
