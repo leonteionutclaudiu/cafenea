@@ -26,15 +26,20 @@ public class ProdusController {
     public String listeazaProduse(Model model,
                                   @RequestParam(defaultValue = "0") int pagina,
                                   @RequestParam(defaultValue = "nume") String sortare,
-                                  @RequestParam(required = false) String cautare) {
+                                  @RequestParam(required = false) String cautare,
+                                  @RequestParam(required = false) Long categorieId) { // Parametru nou pentru filtru
 
-        Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare, cautare);
+        // Trimitem parametrul în service (trebuie să modificăm și acolo metoda)
+        Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare, cautare, categorieId);
 
         model.addAttribute("listaProduse", paginaProduse.getContent());
         model.addAttribute("paginaCurenta", pagina);
         model.addAttribute("totalPagini", paginaProduse.getTotalPages());
         model.addAttribute("sortare", sortare);
         model.addAttribute("cautare", cautare);
+        model.addAttribute("categorieSelectata", categorieId); // Îl păstrăm ca să rămână selectat în dropdown după submit
+        model.addAttribute("categorii", categorieProdusRepository.findAll()); // Trimitem toate categoriile pentru filtru
+
         return "produse";
     }
 

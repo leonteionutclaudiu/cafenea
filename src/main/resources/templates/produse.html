@@ -31,12 +31,24 @@
 
     <form th:action="@{/produse}" method="get" class="row g-2 mb-4 bg-light p-3 rounded-3 border">
         <input type="hidden" name="sortare" th:value="${sortare}" />
-        <div class="col-md-9">
+
+        <div class="col-md-5">
             <input type="text" name="cautare" th:value="${cautare}" class="form-control"
-                   placeholder="Scrie denumirea produsului căutat... (ex: Espresso)" />
+                   placeholder="Scrie denumirea produsului..." />
         </div>
+
+        <div class="col-md-4">
+            <select name="categorieId" class="form-select">
+                <option value="">-- Toate categoriile --</option>
+                <option th:each="cat : ${categorii}"
+                        th:value="${cat.id}"
+                        th:text="${cat.denumire}"
+                        th:selected="${cat.id == categorieSelectata}"></option>
+            </select>
+        </div>
+
         <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100 fw-bold btn-animate">Caută</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold btn-animate">Filtrează</button>
             <a href="/produse" class="btn btn-outline-secondary px-3">Reset</a>
         </div>
     </form>
@@ -45,9 +57,10 @@
         <table class="table table-hover align-middle text-center m-0">
             <thead class="table-dark">
             <tr>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id',cautare=${cautare})}" class="text-white text-decoration-none">ID ⇅</a></th>
-                <th class="text-start"><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume',cautare=${cautare})}" class="text-white text-decoration-none">Denumire Produs ⇅</a></th>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret',cautare=${cautare})}" class="text-white text-decoration-none">Preț Unitar ⇅</a></th>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">ID ⇅</a></th>
+                <th class="text-start"><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">Denumire Produs ⇅</a></th>
+                <th>Categorie</th>
+                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">Preț Unitar ⇅</a></th>
                 <th>Acțiuni disponibile</th>
             </tr>
             </thead>
@@ -55,6 +68,12 @@
             <tr th:each="p : ${listaProduse}" class="animate__animated animate__fadeInUp">
                 <td th:text="${p.id}" class="fw-bold text-muted">1</td>
                 <td th:text="${p.nume}" class="text-start fw-semibold text-dark">Cafea Latte</td>
+
+                <td>
+                    <span th:text="${p.categorie != null ? p.categorie.denumire : 'Fără categorie'}"
+                          class="badge bg-secondary px-3 py-1 fw-medium shadow-sm">Cafea</span>
+                </td>
+
                 <td th:text="${p.pret} + ' RON'" class="text-success fw-bold">14.5 RON</td>
                 <td>
                     <div sec:authorize="hasRole('ADMIN')" class="d-flex justify-content-center gap-1">
@@ -71,7 +90,7 @@
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(listaProduse)}">
-                <td colspan="4" class="text-muted py-4">Nu am găsit niciun produs conform criteriilor tale.</td>
+                <td colspan="5" class="text-muted py-4">Nu am găsit niciun produs conform criteriilor tale.</td>
             </tr>
             </tbody>
         </table>
@@ -82,7 +101,9 @@
             <ul class="pagination shadow-sm mb-0">
                 <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPagini - 1)}"
                     th:classappend="${paginaCurenta == i} ? 'active' : ''">
-                    <a class="page-link px-3 fw-bold" th:href="@{/produse(pagina=${i},sortare=${sortare},cautare=${cautare})}" th:text="${i + 1}">1</a>
+                    <a class="page-link px-3 fw-bold"
+                       th:href="@{/produse(pagina=${i},sortare=${sortare},cautare=${cautare},categorieId=${categorieSelectata})}"
+                       th:text="${i + 1}">1</a>
                 </li>
             </ul>
         </nav>

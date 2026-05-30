@@ -31,14 +31,28 @@ public class ProdusService {
     }
 
     // 2. READ cu PAGINARE și SORTARE (Cerința 7 din proiect)
-    public Page<Produs> getProdusePaginate(int pagina, int dimensiune, String sortare, String cautare) {
+    public Page<Produs> getProdusePaginate(int pagina, int dimensiune, String sortare, String cautare, Long categorieId) {
         Pageable pageable = PageRequest.of(pagina, dimensiune, Sort.by(sortare));
 
-        // Dacă există text în căsuța de căutare, filtrăm. Dacă nu, aducem toate produsele.
-        if (cautare != null && !cautare.trim().isEmpty()) {
+        boolean areCautare = (cautare != null && !cautare.trim().isEmpty());
+        boolean areCategorie = (categorieId != null);
+
+        // 1. Filtrare completă: și după text și după categorie
+        if (areCautare && areCategorie) {
+            return produsRepository.findByNumeContainingIgnoreCaseAndCategorieId(cautare, categorieId, pageable);
+        }
+        // 2. Filtrare doar după categorie
+        else if (areCategorie) {
+            return produsRepository.findByCategorieId(categorieId, pageable);
+        }
+        // 3. Filtrare doar după text (cum aveai înainte)
+        else if (areCautare) {
             return produsRepository.findByNumeContainingIgnoreCase(cautare, pageable);
         }
-        return produsRepository.findAll(pageable);
+        // 4. Niciun filtru aplicat
+        else {
+            return produsRepository.findAll(pageable);
+        }
     }
 
     // 3. READ după ID (pentru editare sau detalii)

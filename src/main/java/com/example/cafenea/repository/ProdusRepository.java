@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProdusRepository extends JpaRepository<Produs, Long> {
-    // Caută produse al căror nume conține textul introdus, ignorând Case-ul (litere mari/mici)
     Page<Produs> findByNumeContainingIgnoreCase(String nume, Pageable pageable);
+    Page<Produs> findByCategorieId(Long categorieId, Pageable pageable);
+    Page<Produs> findByNumeContainingIgnoreCaseAndCategorieId(String nume, Long categorieId, Pageable pageable);
 }
