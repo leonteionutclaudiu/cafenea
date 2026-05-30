@@ -56,9 +56,9 @@ public class ProdusController {
     public String formularEditareProdus(@PathVariable Long id, Model model) {
         Produs produsExistent = produsService.getProdusDupaId(id);
 
-        model.addAttribute("produs", produsExistent); // Tritem obiectul extras din DB
-        model.addAttribute("categorii", categorieProdusRepository.findAll()); // Trimitem categoriile pentru dropdown
-        return "formular-produs";
+        model.addAttribute("produs", produsExistent); // Trimitem produsul precompletat cu tot cu ID
+        model.addAttribute("categorii", categorieProdusRepository.findAll()); // CRUCIAL: Trimitem categoriile pentru dropdown!
+        return "formular-produs"; // Numele exact al fișierului tău HTML pentru formular
     }
 
     // Ruta POST care salvează modificările sau adaugă produsul nou

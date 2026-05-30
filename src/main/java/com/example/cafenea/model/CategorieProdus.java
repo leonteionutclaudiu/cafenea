@@ -18,5 +18,6 @@ public class CategorieProdus {
 
     // O categorie are mai multe produse
     @OneToMany(mappedBy = "categorie")
+    @ToString.Exclude
     private List<Produs> produse;
 }

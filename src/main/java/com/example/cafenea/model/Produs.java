@@ -26,8 +26,10 @@ public class Produs {
     @ManyToOne
     @JoinColumn(name = "categorie_id")
     @NotNull(message = "Vă rugăm să selectați o categorie!")
+    @ToString.Exclude
     private CategorieProdus categorie;
 
     @ManyToMany(mappedBy = "produse")
     private List<Comanda> comenzi;
+
 }
