@@ -6,7 +6,7 @@ import com.example.cafenea.service.IngredientService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
 @Controller
 @RequestMapping("/ingrediente")
 public class IngredientController {
@@ -17,8 +17,25 @@ public class IngredientController {
     }
 
     @GetMapping
-    public String listaIngrediente(Model model) {
-        model.addAttribute("ingrediente", ingredientService.getAllIngredients());
+    public String listaIngrediente(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "numeIngredient") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model) {
+
+        Page<Ingredient> pageIngredients = ingredientService.getIngredientePaginate(keyword, page, size, sortField, sortDir);
+
+        model.addAttribute("ingrediente", pageIngredients.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pageIngredients.getTotalPages());
+        model.addAttribute("totalItems", pageIngredients.getTotalElements());
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("keyword", keyword);
+
         return "lista-ingrediente";
     }
 
