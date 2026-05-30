@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +31,14 @@ public class ProdusService {
     }
 
     // 2. READ cu PAGINARE și SORTARE (Cerința 7 din proiect)
-    public Page<Produs> getProdusePaginate(int pagina, int dimensiune, String sortare) {
-        logger.info("LOG INFO: Se acceseaza pagina {} de produse, sortata dupa criteriul: {}", pagina, sortare);
-        return produsRepository.findAll(PageRequest.of(pagina, dimensiune, Sort.by(sortare)));
+    public Page<Produs> getProdusePaginate(int pagina, int dimensiune, String sortare, String cautare) {
+        Pageable pageable = PageRequest.of(pagina, dimensiune, Sort.by(sortare));
+
+        // Dacă există text în căsuța de căutare, filtrăm. Dacă nu, aducem toate produsele.
+        if (cautare != null && !cautare.trim().isEmpty()) {
+            return produsRepository.findByNumeContainingIgnoreCase(cautare, pageable);
+        }
+        return produsRepository.findAll(pageable);
     }
 
     // 3. READ după ID (pentru editare sau detalii)

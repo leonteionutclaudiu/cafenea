@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProdusRepository extends JpaRepository<Produs, Long> {
-    // Pageable preia automat parametrii de paginare și sortare din interfață (Cerința 7)
-    Page<Produs> findAll(Pageable pageable);
+    // Caută produse al căror nume conține textul introdus, ignorând Case-ul (litere mari/mici)
+    Page<Produs> findByNumeContainingIgnoreCase(String nume, Pageable pageable);
 }

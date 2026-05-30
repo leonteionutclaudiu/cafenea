@@ -26,15 +26,17 @@ public class ProdusController {
     @GetMapping("/produse")
     public String listeazaProduse(Model model,
                                   @RequestParam(defaultValue = "0") int pagina,
-                                  @RequestParam(defaultValue = "nume") String sortare) {
-        // Afișăm câte 3 produse pe pagină pentru a putea testa ușor paginarea
-        Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare);
+                                  @RequestParam(defaultValue = "nume") String sortare,
+                                  @RequestParam(required = false) String cautare) { // Parametru nou pentru căutare
+
+        Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare, cautare);
 
         model.addAttribute("listaProduse", paginaProduse.getContent());
         model.addAttribute("paginaCurenta", pagina);
         model.addAttribute("totalPagini", paginaProduse.getTotalPages());
         model.addAttribute("sortare", sortare);
-        return "produse"; // Va căuta fișierul produse.html
+        model.addAttribute("cautare", cautare); // Îl trimitem înapoi în HTML ca să rămână scris în căsuță
+        return "produse";
     }
 
     // Ruta care deschide formularul de adăugare produs nou

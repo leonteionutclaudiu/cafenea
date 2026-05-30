@@ -19,23 +19,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Dezactivăm protecția CSRF momentan pentru a nu bloca formularele de test
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // Dezactivat pentru teste simple de formulare
                 .authorizeHttpRequests(auth -> auth
-                        // Permitem accesul liber la pagina de login, la erori și la resurse statice
-                        .requestMatchers("/login", "/login?error", "/login?logout", "/css/**", "/js/**").permitAll()
+                        // REGULA 1: Rutele publice (Home, Login, CSS) - sunt complet libere pentru oricine
+                        .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
+
+                        // REGULA 2: Rutele de administrare (doar pentru MANAGER)
                         .requestMatchers("/produse/sterge/**").hasRole("ADMIN")
+
+                        // REGULA 3: Orice altă rută (ex: /produse) cere să fii logat
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/produse", true)
-                        .permitAll() // Îi dă dreptul lui Spring Security să lase această rută liberă
+                        .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessUrl("/?logout") // După logout, te trimite înapoi pe Home
                         .permitAll()
                 );
         return http.build();
