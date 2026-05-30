@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::#formContent})}">
+<head><title>Formular Ingredient</title></head>
+<body>
+<div id="formContent" class="container mt-5 animate__animated animate__zoomIn" style="max-width: 500px;">
+    <div class="glass-card p-4">
+        <h3 class="fw-bold text-dark mb-4 text-center"
+            th:text="${ingredient.id != null} ? '📝 Editează Ingredient' : '➕ Adaugă Ingredient Nou'">Adaugă Ingredient</h3>
+
+        <form th:action="@{/ingrediente/salveaza}" th:object="${ingredient}" method="post" class="row g-3">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="col-12">
+                <label class="form-label fw-bold">Nume Ingredient</label>
+                <input type="text" th:field="*{numeIngredient}" class="form-control" required placeholder="ex: Boabe Cafea Arabica" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold">Cantitate în Stoc</label>
+                <input type="number" th:field="*{cantitateStoc}" class="form-control" required min="0" />
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success w-100 fw-bold btn-animate">💾 Salvează</button>
+                <a href="/ingrediente" class="btn btn-outline-secondary w-100 fw-bold btn-animate">Anulează</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
