@@ -26,17 +26,11 @@
             transform: translateY(-5px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         }
-        .btn-animate {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .btn-animate:hover {
-            transform: scale(1.03);
-        }
     </style>
 </head>
 <body class="d-flex flex-column">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm animate__animated animate__fadeInDown">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold fs-4" href="/">☕ CafeApp Premium</a>
 
@@ -47,25 +41,25 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <div class="d-flex align-items-center text-white" sec:authorize="isAuthenticated()">
 
-                <a href="/produse" class="btn btn-outline-light btn-sm fw-bold btn-animate me-2 px-3">☕ Produse</a>
-                <a href="/ingrediente" class="btn btn-outline-light btn-sm fw-bold btn-animate me-2 px-3">🥛 Ingrediente</a>
-                <a href="/utilizatori" class="btn btn-outline-light btn-sm fw-bold btn-animate me-2 px-3">👤 Clienți & Personal</a>
-                <a href="/comenzi" class="btn btn-outline-light btn-sm fw-bold btn-animate me-2 px-3">🧾 Comenzi</a>
+                <a href="/produse" class="btn btn-outline-light btn-sm fw-bold me-2 px-3">☕ Produse</a>
+                <a href="/ingrediente" class="btn btn-outline-light btn-sm fw-bold me-2 px-3">🥛 Ingrediente</a>
+                <a href="/utilizatori" class="btn btn-outline-light btn-sm fw-bold me-2 px-3">👤 Clienți & Personal</a>
+                <a href="/comenzi" class="btn btn-outline-light btn-sm fw-bold me-2 px-3">🧾 Comenzi</a>
 
-                <a href="/schimbare-parola" class="btn btn-outline-warning btn-sm fw-bold btn-animate me-2 px-3">⚙️ Schimbă Parola</a>
-                <a href="/register" sec:authorize="hasRole('ADMIN')" class="btn btn-outline-info btn-sm fw-bold btn-animate me-3 px-3">➕ Adaugă Personal</a>
+                <a href="/schimbare-parola" class="btn btn-outline-warning btn-sm fw-bold me-2 px-3">⚙️ Schimbă Parola</a>
+                <a href="/register" sec:authorize="hasRole('ADMIN')" class="btn btn-outline-info btn-sm fw-bold me-3 px-3">➕ Adaugă Personal</a>
 
                 <span class="me-3 bg-light text-dark px-3 py-1 rounded-pill small fw-semibold">
-            Utilizator: <span class="text-primary" sec:authentication="name">User</span>
-        </span>
+                    Utilizator: <span class="text-primary" sec:authentication="name">User</span>
+                </span>
 
                 <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-danger btn-sm fw-bold btn-animate px-3">Ieșire</button>
+                    <button type="submit" class="btn btn-danger btn-sm fw-bold px-3">Ieșire</button>
                 </form>
             </div>
 
             <div sec:authorize="!isAuthenticated()">
-                <a href="/login" class="btn btn-outline-light btn-sm fw-bold btn-animate px-3">Conectare</a>
+                <a href="/login" class="btn btn-outline-light btn-sm fw-bold px-3">Conectare</a>
             </div>
         </div>
     </div>
@@ -75,7 +69,7 @@
     <div th:replace="${content}"></div>
 </main>
 
-<footer class="text-center text-muted py-4 mt-5 bg-white border-top shadow-sm animate__animated animate__fadeInUp">
+<footer class="text-center text-muted py-4 mt-5 bg-white border-top shadow-sm">
     <div class="container small fw-medium">
         &copy; <span id="currentYear"></span> - CafeApp Enterprise Academic Project. Toate drepturile rezervate.
     </div>

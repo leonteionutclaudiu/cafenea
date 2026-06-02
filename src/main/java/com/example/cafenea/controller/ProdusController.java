@@ -11,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
 @Controller
 public class ProdusController {
 
@@ -21,24 +20,33 @@ public class ProdusController {
     @Autowired
     private CategorieProdusRepository categorieProdusRepository;
 
-    // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare
+    // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare uniformizată
     @GetMapping("/produse")
-    public String listeazaProduse(Model model,
-                                  @RequestParam(defaultValue = "0") int pagina,
-                                  @RequestParam(defaultValue = "nume") String sortare,
-                                  @RequestParam(required = false) String cautare,
-                                  @RequestParam(required = false) Long categorieId) { // Parametru nou pentru filtru
+    public String listeazaProduse(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(required = false) Long categorieId, // Corectat: required=false pentru tipuri numerice/Long
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "nume") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model) {
 
-        // Trimitem parametrul în service (trebuie să modificăm și acolo metoda)
-        Page<Produs> paginaProduse = produsService.getProdusePaginate(pagina, 3, sortare, cautare, categorieId);
+        // CORECTAT: Apelăm serviciul și salvăm rezultatul în variabila pageProduse
+        Page<Produs> pageProduse = produsService.getProdusePaginate(keyword, categorieId, page, size, sortField, sortDir);
 
-        model.addAttribute("listaProduse", paginaProduse.getContent());
-        model.addAttribute("paginaCurenta", pagina);
-        model.addAttribute("totalPagini", paginaProduse.getTotalPages());
-        model.addAttribute("sortare", sortare);
-        model.addAttribute("cautare", cautare);
-        model.addAttribute("categorieSelectata", categorieId); // Îl păstrăm ca să rămână selectat în dropdown după submit
-        model.addAttribute("categorii", categorieProdusRepository.findAll()); // Trimitem toate categoriile pentru filtru
+        // Trimitem datele către interfața Thymeleaf (produse.html)
+        model.addAttribute("listaProduse", pageProduse.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pageProduse.getTotalPages());
+        model.addAttribute("totalItems", pageProduse.getTotalElements());
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("categorieSelectata", categorieId);
+
+        // CRUCIAL: Trimitem și lista completă de categorii pentru a popula dropdown-ul de filtrare din pagină
+        model.addAttribute("categorii", categorieProdusRepository.findAll());
 
         return "produse";
     }
@@ -51,14 +59,14 @@ public class ProdusController {
         return "formular-produs";
     }
 
-    // REPARAT: Am înlocuit „...” cu obiectul real produsExistent
+    // Ruta care deschide formularul de editare al unui produs existent
     @GetMapping("/produse/editeaza/{id}")
     public String formularEditareProdus(@PathVariable Long id, Model model) {
         Produs produsExistent = produsService.getProdusDupaId(id);
 
         model.addAttribute("produs", produsExistent); // Trimitem produsul precompletat cu tot cu ID
-        model.addAttribute("categorii", categorieProdusRepository.findAll()); // CRUCIAL: Trimitem categoriile pentru dropdown!
-        return "formular-produs"; // Numele exact al fișierului tău HTML pentru formular
+        model.addAttribute("categorii", categorieProdusRepository.findAll()); // Trimitem categoriile pentru dropdown
+        return "formular-produs";
     }
 
     // Ruta POST care salvează modificările sau adaugă produsul nou

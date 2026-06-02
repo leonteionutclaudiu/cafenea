@@ -21,7 +21,4 @@ public class Utilizator {
 
     private String rol; // ADMIN (Manager) sau USER (Ospătar)
 
-    // Relația obligatorie @OneToOne (un utilizator poate avea un card de fidelitate salvat)
-    @OneToOne(mappedBy = "utilizator", cascade = CascadeType.ALL)
-    private CardFidelitate cardFidelitate;
 }

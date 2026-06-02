@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::#utilizatoriContent})}">
-<head><title>Utilizatori & Fidelitate</title></head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: iFrame(~{::#utilizatoriContent})}">
+<head>
+    <title>Utilizatori & Fidelitate</title>
+</head>
 <body>
 <div id="utilizatoriContent" class="container mt-4 animate__animated animate__fadeIn">
     <div class="glass-card p-4">
         <h2 class="fw-bold mb-4 text-dark">👤 Clienți & Personalul Cafenelei</h2>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <form th:action="@{/utilizatori}" method="get" class="row g-2 mb-4">
+            <input type="hidden" name="sortField" th:value="${sortField}"/>
+            <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+            <div class="col-md-8">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Caută utilizator după username..." />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100 fw-bold">🔍 Caută</button>
+                <a th:href="@{/utilizatori}" class="btn btn-outline-secondary w-100 fw-bold">Reset</a>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -13,34 +32,45 @@
                     <th>ID</th>
                     <th>Nume Utilizator</th>
                     <th>Rol Sistem</th>
-                    <th>💳 Card Fidelitate Activat</th>
-                    <th>Puncte Bonus</th>
-                    <th class="text-center">Acțiuni Card</th>
+                    <th class="text-center" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">Acțiuni</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="user : ${utilizatori}">
                     <td th:text="${user.id}">1</td>
-                    <td th:text="${user.username}" class="fw-bold">Ospătar1</td>
+                    <td th:text="${user.username}" class="fw-bold text-dark">Ospătar1</td>
                     <td>
                         <span class="badge bg-info text-dark fw-bold" th:text="${user.rol}">USER</span>
                     </td>
-                    <td>
-                        <span th:if="${user.cardFidelitate != null}" th:text="${user.cardFidelitate.codCard}" class="font-monospace fw-bold text-success">CAFE-A1B2C3D4</span>
-                        <span th:if="${user.cardFidelitate == null}" class="text-muted small">Fără card activat</span>
-                    </td>
-                    <td>
-                        <span th:if="${user.cardFidelitate != null}" th:text="${user.cardFidelitate.puncteAcumulate} + ' puncte'" class="fw-bold">10 puncte</span>
-                        <span th:if="${user.cardFidelitate == null}">-</span>
-                    </td>
-                    <td class="text-center">
-                        <a th:if="${user.cardFidelitate == null}" th:href="@{/utilizatori/genereaza-card/{id}(id=${user.id})}" class="btn btn-sm btn-success fw-bold btn-animate">✨ Activează Card</a>
-                        <a th:if="${user.cardFidelitate != null}" th:href="@{/utilizatori/sterge-card/{id}(id=${user.cardFidelitate.id})}" class="btn btn-sm btn-danger fw-bold btn-animate"
-                           onclick="return confirm('Sigur doriți să dezactivați acest card de fidelitate?')">❌ Dezactivează</a>
+                    <td class="text-center" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">
+                        <a th:href="@{/utilizatori/sterge/{id}(id=${user.id})}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Sigur vrei să ștergi acest utilizator?')">🗑️ Șterge</a>
                     </td>
                 </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Total: <span th:text="${totalItems}" class="fw-bold"></span> utilizatori.
+                Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm m-0">
+                    <li class="page-item" th:classappend="${currentPage == 1 || totalPages == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/utilizatori(page=${currentPage - 1}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}">Înapoi</a>
+                    </li>
+                    <li th:each="i : ${totalPages > 0 ? #numbers.sequence(1, totalPages) : #numbers.sequence(0, 0)}"
+                        class="page-item" th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/utilizatori(page=${i}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}" th:text="${i}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages || totalPages == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/utilizatori(page=${currentPage + 1}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}">Înainte</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

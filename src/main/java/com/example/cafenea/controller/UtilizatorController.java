@@ -1,53 +1,79 @@
 package com.example.cafenea.controller;
 
-import com.example.cafenea.model.CardFidelitate;
 import com.example.cafenea.model.Utilizator;
 import com.example.cafenea.repository.UtilizatorRepository;
-import com.example.cafenea.repository.CardFidelitateRepository;
+import com.example.cafenea.service.UtilizatorService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/utilizatori")
 public class UtilizatorController {
 
+    private final UtilizatorService utilizatorService;
     private final UtilizatorRepository utilizatorRepository;
-    private final CardFidelitateRepository cardRepository;
 
-    public UtilizatorController(UtilizatorRepository utilizatorRepository, CardFidelitateRepository cardRepository) {
+    public UtilizatorController(UtilizatorService utilizatorService, UtilizatorRepository utilizatorRepository) {
+        this.utilizatorService = utilizatorService;
         this.utilizatorRepository = utilizatorRepository;
-        this.cardRepository = cardRepository;
     }
 
-    // READ: Afișăm toți utilizatorii și cardurile lor
     @GetMapping
-    public String listeazaUtilizatori(Model model) {
-        model.addAttribute("utilizatori", utilizatorRepository.findAll());
+    public String listeazaUtilizatori(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "username") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model) {
+
+        Page<Utilizator> pageUtilizatori = utilizatorService.getUtilizatoriPaginati(keyword, page, size, sortField, sortDir);
+
+        model.addAttribute("utilizatori", pageUtilizatori.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pageUtilizatori.getTotalPages());
+        model.addAttribute("totalItems", pageUtilizatori.getTotalElements());
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("keyword", keyword);
+
         return "lista-utilizatori";
     }
 
-    // CREATE (Card): Generăm automat un card atașat utilizatorului
-    @GetMapping("/genereaza-card/{userId}")
-    public String genereazaCard(@PathVariable Long userId) {
-        Utilizator user = utilizatorRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizatorul nu există"));
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @GetMapping("/sterge/{id}")
+    public String stergeUtilizator(@PathVariable Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
 
-        if (user.getCardFidelitate() == null) {
-            CardFidelitate card = new CardFidelitate();
-            card.setCodCard("CAFE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            card.setPuncteAcumulate(10); // Cadou de bun venit!
-            card.setUtilizator(user);
-            cardRepository.save(card);
+        Utilizator userToDelete = utilizatorRepository.findById(id).orElse(null);
+
+        if (userToDelete == null) {
+            redirectAttributes.addFlashAttribute("error", "Utilizatorul nu există!");
+            return "redirect:/utilizatori";
         }
-        return "redirect:/utilizatori";
-    }
 
-    // DELETE (Card): Ștergem cardul de fidelitate
-    @GetMapping("/sterge-card/{cardId}")
-    public String stergeCard(@PathVariable Long cardId) {
-        cardRepository.deleteById(cardId);
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean isCurrentUser = userToDelete.getUsername().equals(currentUsername);
+
+        try {
+            utilizatorRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Utilizator șters cu succes!");
+
+            if (isCurrentUser) {
+                request.getSession().invalidate();
+                SecurityContextHolder.clearContext();
+                return "redirect:/login?logout";
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Eroare: Utilizatorul are comenzi asociate!");
+        }
+
         return "redirect:/utilizatori";
     }
 }

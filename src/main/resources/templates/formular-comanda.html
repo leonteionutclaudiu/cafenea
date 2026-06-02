@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: iFrame(~{::body})}">
+<head>
+    <title>Gestionare Comandă</title>
+</head>
+<body>
+<div class="container p-4 bg-white rounded-4 shadow-sm" style="max-width: 600px;">
+
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark m-0" th:text="${comanda.id != null} ? '✏️ Modificare Comandă #' + ${comanda.id} : '📝 Înregistrare Comandă Nouă'"></h3>
+        <p class="text-muted small m-0">Actualizați produsele solicitate de client în sistem</p>
+    </div>
+
+    <form th:action="@{/comenzi/salveaza}" th:object="${comanda}" method="post" class="needs-validation">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-dark">👤 Ospătar responsabil:</label>
+            <select th:field="*{utilizator}" class="form-select" required>
+                <option value="">-- Selectează personalul --</option>
+                <option th:each="u : ${utilizatori}"
+                        th:value="${u.id}"
+                        th:text="${u.username}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-dark">🪑 Număr Masă:</label>
+            <input type="number" th:field="*{numarMasa}" class="form-control" min="1" max="50" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-dark">☕ Produse comandate:</label>
+            <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+
+                <div th:each="p : ${toateProdusele}" class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                    <div class="form-check m-0">
+                        <input type="checkbox"
+                               name="produseIds"
+                               th:value="${p.id}"
+                               th:id="'prod-' + ${p.id}"
+                               th:checked="${comanda.produse != null && comanda.produse.contains(p)}"
+                               class="form-check-input" />
+                        <label th:for="'prod-' + ${p.id}" class="form-check-label fw-medium text-dark" th:text="${p.nume} + ' (' + ${p.pret} + ' RON)'"></label>
+                    </div>
+                    <div style="width: 90px;">
+                        <input type="number"
+                               th:name="'cantitate_' + ${p.id}"
+                               th:value="${comanda.id != null && comanda.getCantitateProdus(p.id) > 0} ? ${comanda.getCantitateProdus(p.id)} : 1"
+                               min="1" max="20"
+                               class="form-control form-control-sm text-center" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <input type="hidden" th:field="*{status}" th:value="*{status} ?: 'PRIMITA'" />
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary fw-bold px-4">💾 Salvează Modificările</button>
+            <a href="/comenzi" class="btn btn-outline-secondary px-4">Anulează</a>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

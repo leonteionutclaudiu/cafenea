@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container p-4 bg-white rounded-4 shadow-sm" style="max-width: 1050px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark m-0">🧾 Gestiune Comenzi Cafenea</h3>
+            <p class="text-muted small m-0">Vizualizare, stări comenzi și istoric plăți</p>
+        </div>
+        <div>
+            <a href="/comenzi/nou" class="btn btn-success fw-bold shadow-sm px-4">+ Comandă Nouă</a>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show text-center fw-bold" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="table-responsive rounded-3 border">
+        <table class="table table-hover align-middle text-center m-0">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>
+                    <a th:href="@{/comenzi(page=${currentPage}, sortField='dataComanda', sortDir=${reverseSortDir})}" class="text-white text-decoration-none">
+                        Dată & Oră <span th:text="${sortField == 'dataComanda'} ? (${sortDir == 'asc'} ? '▲' : '▼') : ''"></span>
+                    </a>
+                </th>
+                <th>Locație / Masă</th>
+                <th class="text-start">Produse Comandate</th>
+                <th>Ospătar</th>
+                <th>
+                    <a th:href="@{/comenzi(page=${currentPage}, sortField='totalPlata', sortDir=${reverseSortDir})}" class="text-white text-decoration-none">
+                        Total Plată <span th:text="${sortField == 'totalPlata'} ? (${sortDir == 'asc'} ? '▲' : '▼') : ''"></span>
+                    </a>
+                </th>
+                <th>Status</th>
+                <th>Acțiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${listaComenzi}">
+                <td th:text="${c.id}" class="fw-bold text-muted">1</td>
+                <td th:text="${#temporals.format(c.dataComanda, 'dd-MM-yyyy HH:mm')}">02-06-2026 14:30</td>
+                <td>
+                    <span th:if="${c.numarMasa != null}" class="fw-semibold text-dark">🪑 Masă <span th:text="${c.numarMasa}"></span></span>
+                    <span th:if="${c.numarMasa == null}" class="badge bg-light text-secondary border px-2 py-1">🛍️ La pachet</span>
+                </td>
+                <td class="text-start small">
+                    <ul class="m-0 ps-3">
+                        <li th:each="entry : ${c.produseGrupateCuCantitate}">
+                            <span th:text="${entry.key.nume}" class="fw-bold text-dark"></span>
+                            <span class="badge bg-secondary ms-1" th:text="'x' + ${entry.value}">x1</span>
+                        </li>
+                    </ul>
+                </td>
+                <td th:text="${c.utilizator != null ? c.utilizator.username : 'Nespecificat'}" class="fw-medium">Ospatar1</td>
+                <td th:text="${c.totalPlata} + ' RON'" class="text-dark fw-bold">15.0 RON</td>
+                <td>
+                    <span th:if="${c.status == 'PRIMITA'}" class="badge bg-warning text-dark px-2 py-1">PRIMIȚĂ</span>
+                    <span th:if="${c.status == 'IN_PREPARARE'}" class="badge bg-info text-dark px-2 py-1">ÎN PREPARARE</span>
+                    <span th:if="${c.status == 'FINALIZATA'}" class="badge bg-success px-2 py-1">FINALIZATĂ</span>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-center gap-1">
+                        <a th:if="${c.status == 'PRIMITA'}" th:href="@{/comenzi/status/{id}(id=${c.id}, status='IN_PREPARARE')}" class="btn btn-sm btn-outline-info fw-bold py-0 px-2">☕ Prepară</a>
+                        <a th:if="${c.status == 'IN_PREPARARE'}" th:href="@{/comenzi/status/{id}(id=${c.id}, status='FINALIZATA')}" class="btn btn-sm btn-outline-success fw-bold py-0 px-2">✅ Finalizează</a>
+
+                        <a th:if="${c.status != 'FINALIZATA'}"
+                           th:href="@{/comenzi/editeaza/{id}(id=${c.id})}"
+                           class="btn btn-warning btn-sm fw-bold py-0 px-2">
+                            ✏️ Modifică
+                        </a>
+
+                        <span th:if="${c.status == 'FINALIZATA'}" class="text-muted small">
+                            🔒 Blocată
+                        </span>
+
+                        <a sec:authorize="hasRole('ADMIN')" th:href="@{/comenzi/sterge/{id}(id=${c.id})}"
+                           th:onclick="return confirm('Sigur doriți ștergerea acestei comenzi?')"
+                           class="btn btn-sm btn-danger py-0 px-2">❌</a>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(listaComenzi)}">
+                <td colspan="8" class="text-muted py-4">Nu există nicio comandă înregistrată.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted small">
+            Total: <span th:text="${totalItems}" class="fw-bold"></span> comenzi.
+            Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm m-0">
+                <li class="page-item" th:classappend="${currentPage == 1 || totalPages == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/comenzi(page=${currentPage - 1}, sortField=${sortField}, sortDir=${sortDir})}">Înapoi</a>
+                </li>
+                <li th:each="i : ${totalPages > 0 ? #numbers.sequence(1, totalPages) : #annotationList}"
+                    class="page-item" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link" th:href="@{/comenzi(page=${i}, sortField=${sortField}, sortDir=${sortDir})}" th:text="${i}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages || totalPages == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/comenzi(page=${currentPage + 1}, sortField=${sortField}, sortDir=${sortDir})}">Înainte</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+</div>
+</body>
+</html>

@@ -60,19 +60,23 @@
             </table>
         </div>
 
-        <div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-4">
+        <div class="d-flex justify-content-between align-items-center mt-4">
             <div class="text-muted small">
-                Total: <span th:text="${totalItems}" class="fw-bold"></span> ingrediente. Pagina <span th:text="${currentPage}"></span> din <span th:text="${totalPages}"></span>
+                Total: <span th:text="${totalItems}" class="fw-bold"></span> ingrediente.
+                Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>
             </div>
             <nav>
                 <ul class="pagination pagination-sm m-0">
-                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <li class="page-item" th:classappend="${currentPage == 1 || totalPages == 0} ? 'disabled'">
                         <a class="page-link" th:href="@{/ingrediente(page=${currentPage - 1}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}">Înapoi</a>
                     </li>
-                    <li th:each="i : ${#numbers.sequence(1, totalPages)}" class="page-item" th:classappend="${currentPage == i} ? 'active'">
+
+                    <li th:each="i : ${totalPages > 0 ? #numbers.sequence(1, totalPages) : #annotationList}"
+                        class="page-item" th:classappend="${currentPage == i} ? 'active'">
                         <a class="page-link" th:href="@{/ingrediente(page=${i}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}" th:text="${i}">1</a>
                     </li>
-                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages || totalPages == 0} ? 'disabled'">
                         <a class="page-link" th:href="@{/ingrediente(page=${currentPage + 1}, keyword=${keyword}, sortField=${sortField}, sortDir=${sortDir})}">Înainte</a>
                     </li>
                 </ul>

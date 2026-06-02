@@ -30,10 +30,11 @@
     </div>
 
     <form th:action="@{/produse}" method="get" class="row g-2 mb-4 bg-light p-3 rounded-3 border">
-        <input type="hidden" name="sortare" th:value="${sortare}" />
+        <input type="hidden" name="sortField" th:value="${sortField}" />
+        <input type="hidden" name="sortDir" th:value="${sortDir}" />
 
         <div class="col-md-5">
-            <input type="text" name="cautare" th:value="${cautare}" class="form-control"
+            <input type="text" name="keyword" th:value="${keyword}" class="form-control"
                    placeholder="Scrie denumirea produsului..." />
         </div>
 
@@ -57,10 +58,22 @@
         <table class="table table-hover align-middle text-center m-0">
             <thead class="table-dark">
             <tr>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='id',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">ID ⇅</a></th>
-                <th class="text-start"><a th:href="@{/produse(pagina=${paginaCurenta},sortare='nume',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">Denumire Produs ⇅</a></th>
+                <th>
+                    <a th:href="@{/produse(page=${currentPage}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField='id', sortDir=${reverseSortDir})}" class="text-white text-decoration-none">
+                        ID <span th:text="${sortField == 'id'} ? (${sortDir == 'asc'} ? '▲' : '▼') : ''"></span>
+                    </a>
+                </th>
+                <th class="text-start">
+                    <a th:href="@{/produse(page=${currentPage}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField='nume', sortDir=${reverseSortDir})}" class="text-white text-decoration-none">
+                        Denumire Produs <span th:text="${sortField == 'nume'} ? (${sortDir == 'asc'} ? '▲' : '▼') : ''"></span>
+                    </a>
+                </th>
                 <th>Categorie</th>
-                <th><a th:href="@{/produse(pagina=${paginaCurenta},sortare='pret',cautare=${cautare},categorieId=${categorieSelectata})}" class="text-white text-decoration-none">Preț Unitar ⇅</a></th>
+                <th>
+                    <a th:href="@{/produse(page=${currentPage}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField='pret', sortDir=${reverseSortDir})}" class="text-white text-decoration-none">
+                        Preț Unitar <span th:text="${sortField == 'pret'} ? (${sortDir == 'asc'} ? '▲' : '▼') : ''"></span>
+                    </a>
+                </th>
                 <th>Acțiuni disponibile</th>
             </tr>
             </thead>
@@ -96,18 +109,29 @@
         </table>
     </div>
 
-    <div class="d-flex justify-content-center mt-4" th:if="${totalPagini > 1}">
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted small">
+            Total: <span th:text="${totalItems}" class="fw-bold"></span> produse.
+            Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>
+        </div>
         <nav>
-            <ul class="pagination shadow-sm mb-0">
-                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPagini - 1)}"
-                    th:classappend="${paginaCurenta == i} ? 'active' : ''">
-                    <a class="page-link px-3 fw-bold"
-                       th:href="@{/produse(pagina=${i},sortare=${sortare},cautare=${cautare},categorieId=${categorieSelectata})}"
-                       th:text="${i + 1}">1</a>
+            <ul class="pagination pagination-sm m-0">
+                <li class="page-item" th:classappend="${currentPage == 1 || totalPages == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/produse(page=${currentPage - 1}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField=${sortField}, sortDir=${sortDir})}">Înapoi</a>
+                </li>
+
+                <li th:each="i : ${totalPages > 0 ? #numbers.sequence(1, totalPages) : #annotationList}"
+                    class="page-item" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link" th:href="@{/produse(page=${i}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField=${sortField}, sortDir=${sortDir})}" th:text="${i}">1</a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage == totalPages || totalPages == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/produse(page=${currentPage + 1}, keyword=${keyword}, categorieId=${categorieSelectata}, sortField=${sortField}, sortDir=${sortDir})}">Înainte</a>
                 </li>
             </ul>
         </nav>
     </div>
+
 </div>
 </body>
 </html>

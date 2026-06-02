@@ -31,8 +31,15 @@ public class ProdusService {
     }
 
     // 2. READ cu PAGINARE și SORTARE (Cerința 7 din proiect)
-    public Page<Produs> getProdusePaginate(int pagina, int dimensiune, String sortare, String cautare, Long categorieId) {
-        Pageable pageable = PageRequest.of(pagina, dimensiune, Sort.by(sortare));
+    // 2. READ cu PAGINARE, SORTARE și FILTRARE (Cerința 7 din proiect) - REPARATĂ ALINIEREA CU CONTROLLER-UL
+    public Page<Produs> getProdusePaginate(String cautare, Long categorieId, int pagina, int dimensiune, String sortCamp, String sortDirectie) {
+
+        // Generăm sortarea dinamică în funcție de direcția cerută (asc / desc)
+        Sort sort = sortDirectie.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                Sort.by(sortCamp).ascending() : Sort.by(sortCamp).descending();
+
+        // Spring Data JPA începe paginarea de la 0. De aceea scădem 1 din pagina primită de la Controller (care vine ca 1, 2, 3...)
+        Pageable pageable = PageRequest.of(pagina - 1, dimensiune, sort);
 
         boolean areCautare = (cautare != null && !cautare.trim().isEmpty());
         boolean areCategorie = (categorieId != null);
@@ -45,11 +52,11 @@ public class ProdusService {
         else if (areCategorie) {
             return produsRepository.findByCategorieId(categorieId, pageable);
         }
-        // 3. Filtrare doar după text (cum aveai înainte)
+        // 3. Filtrare doar după text
         else if (areCautare) {
             return produsRepository.findByNumeContainingIgnoreCase(cautare, pageable);
         }
-        // 4. Niciun filtru aplicat
+        // 4. Niciun filtru aplicat -> aduce toate produsele sortate și paginate
         else {
             return produsRepository.findAll(pageable);
         }
