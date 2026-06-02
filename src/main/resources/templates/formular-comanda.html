@@ -27,8 +27,15 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-semibold text-dark">🪑 Număr Masă:</label>
-            <input type="number" th:field="*{numarMasa}" class="form-control" min="1" max="50" />
+            <label class="form-label fw-semibold text-dark">🪑 Masă:</label>
+            <select th:field="*{masa.id}" class="form-select" required>
+                <option value="">-- Selectează o masă liberă --</option>
+                <option th:each="m : ${toateMesele}"
+                        th:value="${m.id}"
+                        th:text="'Masa ' + ${m.numarMasa} + ' (' + ${m.status} + ')'"
+                        th:disabled="${m.status == 'OCUPATA' && (comanda.masa == null || m.id != comanda.masa.id)}">
+                </option>
+            </select>
         </div>
 
         <div class="mb-3">

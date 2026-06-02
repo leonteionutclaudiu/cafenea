@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,10 @@ public class ComandaService {
         return comandaRepository.findAll(pageable);
     }
 
+    @Transactional // Adăugat pentru a asigura consistența în baza de date
     public void salveazaComanda(Comanda comanda, List<Long> produseIds) {
         List<Produs> listaProduseComplete = new ArrayList<>();
 
-        // Parcurgem fiecare ID primit (dacă un ID apare de 3 ori, îl încărcăm și adăugăm de 3 ori)
         if (produseIds != null) {
             for (Long pId : produseIds) {
                 Produs p = produsRepository.findById(pId)
@@ -55,20 +56,28 @@ public class ComandaService {
         comandaRepository.save(comanda);
     }
 
+    @Transactional
     public void schimbaStatus(Long id, String status) {
         Comanda comanda = comandaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Comanda cu ID-ul " + id + " nu există."));
+
         comanda.setStatus(status);
         logger.warn("LOG WARN: Statusul comenzii {} a fost modificat în {}", id, status);
         comandaRepository.save(comanda);
     }
 
+    @Transactional
     public void stergeComanda(Long id) {
         if (!comandaRepository.existsById(id)) {
             logger.error("LOG ERROR: S-a încercat ștergerea unei comenzi inexistente! ID: {}", id);
             throw new IllegalArgumentException("Comanda cu ID-ul " + id + " nu a fost găsită în baza de date.");
         }
+
+        // Notă: Dacă masa nu s-a eliberat automat prin controller la ștergere,
+        // poți adăuga aici logica de eliberare a mesei.
+
         comandaRepository.deleteById(id);
+        logger.info("LOG INFO: Comanda {} a fost ștearsă.", id);
     }
 
     public Comanda getComandaById(Long id) {

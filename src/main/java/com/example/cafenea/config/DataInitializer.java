@@ -1,6 +1,8 @@
 package com.example.cafenea.config;
 
+import com.example.cafenea.model.Masa;
 import com.example.cafenea.model.Utilizator;
+import com.example.cafenea.repository.MasaRepository;
 import com.example.cafenea.repository.UtilizatorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -14,26 +16,34 @@ public class DataInitializer implements CommandLineRunner {
     private UtilizatorRepository utilizatorRepository;
 
     @Autowired
+    private MasaRepository masaRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        // Ne asigurăm din cod că curățăm tabelele dacă au rămas date inconsistente la teste
-        // Dacă vrei să fii sigur, poți lăsa linia de mai jos pornită o singură rulare:
-        // utilizatorRepository.deleteAll();
 
+        // 1. Inițializare Utilizatori
         if (utilizatorRepository.count() == 0) {
-            System.out.println("⚠️ Generăm contul curat de Manager în PostgreSQL...");
-
             Utilizator managerImplicit = new Utilizator();
             managerImplicit.setUsername("manager");
-            // Criptare explicită cu BCrypt
             managerImplicit.setPassword(passwordEncoder.encode("manager123"));
-            // Salvăm simplu "ADMIN" - metoda .roles() din SecurityConfig se va ocupa de mapare
             managerImplicit.setRol("ADMIN");
-
             utilizatorRepository.save(managerImplicit);
-            System.out.println("✅ Cont generat cu succes! User: manager | Parolă: manager123");
+            System.out.println("✅ Manager generat.");
+        }
+
+        // 2. Inițializare Mese (nou)
+        if (masaRepository.count() == 0) {
+            System.out.println("🪑 Generăm mesele cafenelei...");
+            for (int i = 1; i <= 10; i++) {
+                Masa masa = new Masa();
+                masa.setNumarMasa(i);
+                masa.setStatus("LIBERA");
+                masaRepository.save(masa);
+            }
+            System.out.println("✅ 10 mese generate cu succes!");
         }
     }
 }

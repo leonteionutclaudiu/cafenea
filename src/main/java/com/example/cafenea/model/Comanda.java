@@ -39,7 +39,13 @@ public class Comanda {
         this.numarMasa = null;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "masa_id")
+    private Masa masa;
+    
     // Getters și Setters
+    public Masa getMasa() { return masa; }
+    public void setMasa(Masa masa) { this.masa = masa; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
