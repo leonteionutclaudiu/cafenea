@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: iFrame(~{::#profilContent})}">
+<head>
+    <title>Editare Profil</title>
+</head>
+<body>
+
+<div id="profilContent" class="container mt-4" style="max-width: 600px;">
+    <div class="glass-card p-4 animate__animated animate__fadeIn">
+        <h2 class="fw-bold mb-4 text-dark">👤 Editare Profil: <span th:text="${utilizator.username}"></span></h2>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <form th:action="@{/utilizatori/salveaza-profil}" th:object="${profil}" method="post">
+            <input type="hidden" name="utilizatorId" th:value="${utilizator.id}" />
+            <input type="hidden" th:field="*{id}" />
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nume Complet:</label>
+                <input type="text" th:field="*{numeComplet}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Adresă:</label>
+                <input type="text" th:field="*{adresa}" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Telefon:</label>
+                <input type="tel" th:field="*{telefon}" class="form-control" placeholder="07xx xxx xxx" />
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary fw-bold px-4">💾 Salvează Modificările</button>
+                <a href="/utilizatori" class="btn btn-outline-secondary px-4">Înapoi</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

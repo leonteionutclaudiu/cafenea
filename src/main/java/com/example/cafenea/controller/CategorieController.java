@@ -1,11 +1,13 @@
 package com.example.cafenea.controller;
-
+import jakarta.validation.constraints.NotBlank;
 import com.example.cafenea.model.CategorieProdus;
 import com.example.cafenea.repository.CategorieProdusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 @Controller
 @RequestMapping("/categorii")
@@ -24,12 +26,17 @@ public class CategorieController {
         return "categorii";
     }
 
-    // Salvează o categorie nouă SAU actualizează una existentă (dacă are ID)
     @PostMapping("/salveaza")
-    public String salveazaCategorie(@ModelAttribute("categorieNoua") CategorieProdus categorie) {
-        if (categorie.getDenumire() != null && !categorie.getDenumire().trim().isEmpty()) {
-            categorieProdusRepository.save(categorie);
+    public String salveazaCategorie(@Valid @ModelAttribute("categorieNoua") CategorieProdus categorie,
+                                    BindingResult result,
+                                    Model model) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("listaCategorii", categorieProdusRepository.findAll());
+            return "categorii";
         }
+
+        categorieProdusRepository.save(categorie);
         return "redirect:/categorii";
     }
 

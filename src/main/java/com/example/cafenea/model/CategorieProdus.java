@@ -1,8 +1,10 @@
 package com.example.cafenea.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "categorii_produs")
@@ -14,6 +16,8 @@ public class CategorieProdus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Denumirea categoriei este obligatorie!")
+    @Size(min = 3, message = "Denumirea trebuie să aibă cel puțin 3 caractere!")
     private String denumire; // ex: Cafea, Bauturi Reci, Patiserie
 
     // O categorie are mai multe produse

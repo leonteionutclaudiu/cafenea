@@ -8,7 +8,7 @@
 <body>
 <div id="utilizatoriContent" class="container mt-4 animate__animated animate__fadeIn">
     <div class="glass-card p-4">
-        <h2 class="fw-bold mb-4 text-dark">👤 Clienți & Personalul Cafenelei</h2>
+        <h2 class="fw-bold mb-4 text-dark">👤 Personalul Cafenelei</h2>
 
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
@@ -29,23 +29,34 @@
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
-                    <th>Nume Utilizator</th>
-                    <th>Rol Sistem</th>
-                    <th class="text-center" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">Acțiuni</th>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 20%;">Username</th>
+                    <th style="width: 15%;">Rol</th>
+                    <th style="width: 25%;">Detalii Profil</th>
+                    <th class="text-center" style="width: 20%;">Acțiuni</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="user : ${utilizatori}">
-                    <td th:text="${user.id}">1</td>
-                    <td th:text="${user.username}" class="fw-bold text-dark">Ospătar1</td>
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.username}" class="fw-bold"></td>
+                    <td><span class="badge bg-info text-dark" th:text="${user.rol}"></span></td>
                     <td>
-                        <span class="badge bg-info text-dark fw-bold" th:text="${user.rol}">USER</span>
+                        <div th:if="${user.profil != null}">
+                            <div th:text="${user.profil.numeComplet}"></div>
+                            <small class="text-muted" th:text="${user.profil.telefon}"></small>
+                        </div>
+                        <span th:if="${user.profil == null}" class="text-muted small">Nespecificat</span>
                     </td>
-                    <td class="text-center" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">
+                    <td class="text-center text-nowrap">
+                        <a th:href="@{/utilizatori/editeaza-profil/{id}(id=${user.id})}"
+                           th:if="${#authentication.name == user.username or #authorization.expression('hasRole(''ADMIN'')') or #authorization.expression('hasRole(''MANAGER'')')}"
+                           class="btn btn-sm btn-info me-1">👤 Profil</a>
+
                         <a th:href="@{/utilizatori/sterge/{id}(id=${user.id})}"
+                           sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')"
                            class="btn btn-sm btn-danger"
-                           onclick="return confirm('Sigur vrei să ștergi acest utilizator?')">🗑️ Șterge</a>
+                           onclick="return confirm('Sigur ștergi acest utilizator?')">🗑️</a>
                     </td>
                 </tr>
                 </tbody>

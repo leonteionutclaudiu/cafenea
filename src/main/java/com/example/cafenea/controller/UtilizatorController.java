@@ -6,11 +6,14 @@ import com.example.cafenea.service.UtilizatorService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.security.Principal;
+import org.springframework.security.access.AccessDeniedException;
 
 @Controller
 @RequestMapping("/utilizatori")
@@ -75,5 +78,52 @@ public class UtilizatorController {
         }
 
         return "redirect:/utilizatori";
+    }
+
+    @PostMapping("/salveaza-profil")
+    public String salveazaProfil(@ModelAttribute("profil") com.example.cafenea.model.ProfilUtilizator profil,
+                                 @RequestParam("utilizatorId") Long utilizatorId, // Adaugă un câmp ascuns în formular
+                                 RedirectAttributes redirectAttributes) {
+
+        // 1. Găsește utilizatorul care este editat, nu cel logat
+        Utilizator utilizator = utilizatorRepository.findById(utilizatorId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizator negăsit"));
+
+        // 2. Asigurare că profilul primit are ID-ul corect (dacă există)
+        if (utilizator.getProfil() != null) {
+            profil.setId(utilizator.getProfil().getId());
+        }
+
+        // 3. Setează relația
+        profil.setUtilizator(utilizator);
+        utilizator.setProfil(profil);
+
+        // 4. Salvează
+        utilizatorRepository.save(utilizator);
+
+        redirectAttributes.addFlashAttribute("success", "Profil actualizat cu succes!");
+        return "redirect:/utilizatori";
+    }
+
+    @GetMapping("/editeaza-profil/{id}")
+    public String editeazaProfil(@PathVariable Long id, Model model, Principal principal) {
+        Utilizator utilizator = utilizatorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizator invalid"));
+
+        // Verificăm permisiunile: este admin/manager SAU este el însuși?
+        boolean isAdminOrManager = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (!isAdminOrManager && !utilizator.getUsername().equals(principal.getName())) {
+            throw new AccessDeniedException("Nu ai voie să modifici acest profil!");
+        }
+
+        if (utilizator.getProfil() == null) {
+            utilizator.setProfil(new com.example.cafenea.model.ProfilUtilizator());
+        }
+
+        model.addAttribute("utilizator", utilizator);
+        model.addAttribute("profil", utilizator.getProfil());
+        return "profil-utilizator";
     }
 }

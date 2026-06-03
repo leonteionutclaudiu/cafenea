@@ -21,4 +21,8 @@ public class Utilizator {
 
     private String rol; // ADMIN (Manager) sau USER (Ospătar)
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profil_id", referencedColumnName = "id")
+    private ProfilUtilizator profil;
+
 }
