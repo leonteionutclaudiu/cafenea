@@ -69,19 +69,21 @@ public class ComandaController {
                                   @RequestParam(value = "produseIds", required = false) List<Long> produseIds,
                                   HttpServletRequest request) {
 
-        // Logica pentru schimbarea mesei la editare
+        // 1. Logica pentru gestionarea stării meselor (Editare vs Creare)
         if (comanda.getId() != null) {
             Comanda comandaVeche = comandaService.getComandaById(comanda.getId());
             Masa masaVeche = comandaVeche.getMasa();
 
-            // Dacă masa s-a schimbat, eliberăm masa veche
-            if (masaVeche != null && comanda.getMasa() != null && !masaVeche.getId().equals(comanda.getMasa().getId())) {
-                masaVeche.setStatus("LIBERA");
-                masaRepository.save(masaVeche);
+            // Dacă masa s-a schimbat sau s-a renunțat la ea (de la masă la pachet)
+            if (masaVeche != null) {
+                if (comanda.getMasa() == null || !masaVeche.getId().equals(comanda.getMasa().getId())) {
+                    masaVeche.setStatus("LIBERA");
+                    masaRepository.save(masaVeche);
+                }
             }
         }
 
-        // Setăm masa nouă ca ocupată
+        // 2. Setăm masa nouă ca ocupată (dacă a fost selectată)
         if (comanda.getMasa() != null && comanda.getMasa().getId() != null) {
             Masa masaNoua = masaRepository.findById(comanda.getMasa().getId()).orElse(null);
             if (masaNoua != null) {
@@ -89,9 +91,12 @@ public class ComandaController {
                 masaNoua.setStatus("OCUPATA");
                 masaRepository.save(masaNoua);
             }
+        } else {
+            // Dacă utilizatorul a ales "La pachet" (value="")
+            comanda.setMasa(null);
         }
 
-        // Logica de prelucrare a produselor
+        // 3. Logica de prelucrare a produselor
         List<Long> listaIduriCuDuplicate = new java.util.ArrayList<>();
         if (produseIds != null) {
             for (Long pId : produseIds) {

@@ -27,9 +27,9 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-semibold text-dark">🪑 Masă:</label>
-            <select th:field="*{masa.id}" class="form-select" required>
-                <option value="">-- Selectează o masă liberă --</option>
+            <label class="form-label fw-semibold text-dark">🪑 Masă (Opțional):</label>
+            <select th:field="*{masa.id}" class="form-select">
+                <option value="">-- La pachet (fără masă) --</option>
                 <option th:each="m : ${toateMesele}"
                         th:value="${m.id}"
                         th:text="'Masa ' + ${m.numarMasa} + ' (' + ${m.status} + ')'"
