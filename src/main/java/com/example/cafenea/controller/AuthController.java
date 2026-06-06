@@ -3,6 +3,7 @@ package com.example.cafenea.controller;
 import com.example.cafenea.model.Utilizator;
 import com.example.cafenea.repository.UtilizatorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,8 +24,11 @@ public class AuthController {
 
     // --- LOGARE ---
     @GetMapping("/login")
-    public String arataPaginaLogin() {
-        // Returnează doar login.html (Spring Security se ocupă nativ de restul verificărilor)
+    public String arataPaginaLogin(Authentication authentication) {
+        // Dacă utilizatorul este deja autentificat, îl trimitem la home sau dashboard
+        if (authentication != null && authentication.isAuthenticated()) {
+            return "redirect:/";
+        }
         return "login";
     }
 
@@ -41,7 +45,6 @@ public class AuthController {
             @RequestParam String rol,
             RedirectAttributes redirectAttributes) {
 
-        // Verificăm dacă utilizatorul există deja pentru a evita dublurile
         if (utilizatorRepository.findByUsername(username).isPresent()) {
             redirectAttributes.addFlashAttribute("eroare", "Acest nume de utilizator este deja utilizat!");
             return "redirect:/register";
@@ -49,14 +52,14 @@ public class AuthController {
 
         Utilizator nouAngajat = new Utilizator();
         nouAngajat.setUsername(username);
-        // Criptăm parola înainte de salvarea în baza de date
         nouAngajat.setPassword(passwordEncoder.encode(password));
         nouAngajat.setRol(rol);
 
         utilizatorRepository.save(nouAngajat);
 
-        redirectAttributes.addFlashAttribute("InregistratCuSucces", true);
-        return "redirect:/login";
+        // Redirecționăm la lista de personal cu mesaj de succes
+        redirectAttributes.addFlashAttribute("success", "Angajatul " + username + " a fost creat cu succes!");
+        return "redirect:/utilizatori";
     }
 
     // --- SCHIMBARE PAROLĂ (UNIVERSAL: PENTRU ORICE USER LOGAT) ---

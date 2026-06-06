@@ -4,12 +4,14 @@ import com.example.cafenea.model.Utilizator;
 import com.example.cafenea.repository.UtilizatorRepository;
 import com.example.cafenea.service.UtilizatorService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
@@ -81,24 +83,35 @@ public class UtilizatorController {
     }
 
     @PostMapping("/salveaza-profil")
-    public String salveazaProfil(@ModelAttribute("profil") com.example.cafenea.model.ProfilUtilizator profil,
-                                 @RequestParam("utilizatorId") Long utilizatorId, // Adaugă un câmp ascuns în formular
-                                 RedirectAttributes redirectAttributes) {
+    public String salveazaProfil(
+            @Valid @ModelAttribute("profil") com.example.cafenea.model.ProfilUtilizator profil,
+            BindingResult result, // BindingResult trebuie să stea imediat după @Valid
+            @RequestParam("utilizatorId") Long utilizatorId,
+            Model model, // Adăugăm Model pentru a putea retrimite obiectele în pagină
+            RedirectAttributes redirectAttributes) {
 
-        // 1. Găsește utilizatorul care este editat, nu cel logat
+        // 1. Verificăm dacă există erori de validare (Regex-ul telefonului, etc.)
+        if (result.hasErrors()) {
+            // Trebuie să reîncărcăm utilizatorul pentru a avea acces la el în formular
+            Utilizator utilizator = utilizatorRepository.findById(utilizatorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Utilizator negăsit"));
+
+            model.addAttribute("utilizator", utilizator);
+            // Returnăm pagina de editare. Aici Thymeleaf va afișa erorile prin th:errors
+            return "profil-utilizator";
+        }
+
+        // 2. Logica de salvare (doar dacă datele sunt valide)
         Utilizator utilizator = utilizatorRepository.findById(utilizatorId)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizator negăsit"));
 
-        // 2. Asigurare că profilul primit are ID-ul corect (dacă există)
         if (utilizator.getProfil() != null) {
             profil.setId(utilizator.getProfil().getId());
         }
 
-        // 3. Setează relația
         profil.setUtilizator(utilizator);
         utilizator.setProfil(profil);
 
-        // 4. Salvează
         utilizatorRepository.save(utilizator);
 
         redirectAttributes.addFlashAttribute("success", "Profil actualizat cu succes!");
@@ -107,10 +120,11 @@ public class UtilizatorController {
 
     @GetMapping("/editeaza-profil/{id}")
     public String editeazaProfil(@PathVariable Long id, Model model, Principal principal) {
+        // 1. Căutăm utilizatorul
         Utilizator utilizator = utilizatorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizator invalid"));
 
-        // Verificăm permisiunile: este admin/manager SAU este el însuși?
+        // 2. Verificăm permisiunile: este admin/manager SAU este chiar el?
         boolean isAdminOrManager = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
 
@@ -118,12 +132,18 @@ public class UtilizatorController {
             throw new AccessDeniedException("Nu ai voie să modifici acest profil!");
         }
 
-        if (utilizator.getProfil() == null) {
-            utilizator.setProfil(new com.example.cafenea.model.ProfilUtilizator());
+        // 3. Verificăm dacă avem deja un obiect "profil" în model (adus de la o validare eșuată)
+        // Dacă NU avem, atunci inițializăm un profil nou sau luăm profilul existent din DB
+        if (!model.containsAttribute("profil")) {
+            if (utilizator.getProfil() == null) {
+                utilizator.setProfil(new com.example.cafenea.model.ProfilUtilizator());
+            }
+            model.addAttribute("profil", utilizator.getProfil());
         }
 
+        // 4. Adăugăm utilizatorul în model (pentru a avea acces la datele lui în pagină)
         model.addAttribute("utilizator", utilizator);
-        model.addAttribute("profil", utilizator.getProfil());
+
         return "profil-utilizator";
     }
 }
