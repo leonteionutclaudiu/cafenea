@@ -1,7 +1,7 @@
 package com.example.cafenea.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -17,19 +17,18 @@ public class Produs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Denumirea produsului nu poate fi goală!")
+    @NotBlank(message = "Denumirea produsului nu poate fi goala!")
     private String nume;
 
-    @Min(value = 1, message = "Prețul trebuie să fie de minimum 1 RON!")
+    @DecimalMin(value = "1.0", message = "Pretul trebuie sa fie de minimum 1 RON!")
     private double pret;
 
     @ManyToOne
     @JoinColumn(name = "categorie_id")
-    @NotNull(message = "Vă rugăm să selectați o categorie!")
+    @NotNull(message = "Va rugam sa selectati o categorie!")
     @ToString.Exclude
     private CategorieProdus categorie;
 
     @ManyToMany(mappedBy = "produse")
     private List<Comanda> comenzi;
-
 }

@@ -1,6 +1,9 @@
 package com.example.cafenea.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "detalii_comenzi")
@@ -12,14 +15,21 @@ public class DetaliiComanda {
 
     @ManyToOne
     @JoinColumn(name = "comanda_id")
+    @NotNull(message = "Comanda este obligatorie.")
     private Comanda comanda;
 
     @ManyToOne
     @JoinColumn(name = "produs_id")
+    @NotNull(message = "Produsul este obligatoriu.")
     private Produs produs;
 
+    @NotNull(message = "Cantitatea este obligatorie.")
+    @Min(value = 1, message = "Cantitatea trebuie sa fie cel putin 1.")
     private Integer cantitate;
-    private Double pretSalvat; // Prețul produsului în momentul în care s-a emis comanda
+
+    @NotNull(message = "Pretul salvat este obligatoriu.")
+    @DecimalMin(value = "0.0", message = "Pretul salvat nu poate fi negativ.")
+    private Double pretSalvat;
 
     public DetaliiComanda() {}
 
@@ -27,10 +37,9 @@ public class DetaliiComanda {
         this.comanda = comanda;
         this.produs = produs;
         this.cantitate = cantitate;
-        this.pretSalvat = produs.getPret(); // Copiem prețul actual al produsului
+        this.pretSalvat = produs.getPret();
     }
 
-    // Getters și Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

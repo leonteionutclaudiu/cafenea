@@ -24,6 +24,7 @@
                         th:value="${u.id}"
                         th:text="${u.username}"></option>
             </select>
+            <div class="text-danger small" th:if="${#fields.hasErrors('utilizator')}" th:errors="*{utilizator}"></div>
         </div>
 
         <div class="mb-3">
@@ -62,6 +63,7 @@
                 </div>
 
             </div>
+            <div class="text-danger small mt-2" th:if="${#fields.hasErrors('produse')}" th:errors="*{produse}"></div>
         </div>
 
         <input type="hidden" th:field="*{status}" th:value="*{status} ?: 'PRIMITA'" />

@@ -9,7 +9,9 @@ import com.example.cafenea.repository.MasaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -65,9 +67,22 @@ public class ComandaController {
     }
 
     @PostMapping("/salveaza")
-    public String salveazaComanda(@ModelAttribute("comanda") Comanda comanda,
+    public String salveazaComanda(@Valid @ModelAttribute("comanda") Comanda comanda,
+                                  BindingResult result,
                                   @RequestParam(value = "produseIds", required = false) List<Long> produseIds,
-                                  HttpServletRequest request) {
+                                  HttpServletRequest request,
+                                  Model model) {
+
+        if (produseIds == null || produseIds.isEmpty()) {
+            result.rejectValue("produse", "produse.empty", "Selectati cel putin un produs pentru comanda.");
+        }
+
+        if (result.hasErrors()) {
+            model.addAttribute("utilizatori", utilizatorRepository.findAll());
+            model.addAttribute("toateProdusele", produsService.getAllProduse());
+            model.addAttribute("toateMesele", masaRepository.findAll());
+            return "formular-comanda";
+        }
 
         // 1. Logica pentru gestionarea stării meselor (Editare vs Creare)
         if (comanda.getId() != null) {

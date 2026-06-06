@@ -1,6 +1,7 @@
 package com.example.cafenea.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class Comanda {
 
     @ManyToOne
     @JoinColumn(name = "utilizator_id")
+    @NotNull(message = "Selectati ospatarul responsabil.")
     private Utilizator utilizator; // Acesta reprezintă OSPĂTARUL
 
     @ManyToMany

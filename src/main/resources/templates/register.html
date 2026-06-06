@@ -4,28 +4,31 @@
 <div class="container d-flex justify-content-center mt-5">
     <div class="card p-4 border-0 glass-card animate__animated animate__backInUp" style="width: 100%; max-width: 430px;">
         <div class="text-center mb-4">
-            <h3 class="fw-bold text-dark">👤 Înregistrare Angajat</h3>
-            <p class="text-muted small">Datele se salvează direct în PostgreSQL</p>
+            <h3 class="fw-bold text-dark">Inregistrare Angajat</h3>
+            <p class="text-muted small">Datele se salveaza direct in PostgreSQL</p>
         </div>
 
-        <form th:action="@{/register}" method="post">
-            <div th:if="${eroare}" class="alert alert-danger" th:text="${eroare}"></div>
+        <form th:action="@{/register}" th:object="${utilizator}" method="post">
             <div class="mb-3">
                 <label class="form-label fw-semibold text-secondary">Nume Utilizator (Username)</label>
-                <input type="text" name="username" class="form-control" placeholder="Alege un username" required />
+                <input type="text" th:field="*{username}" class="form-control" placeholder="Alege un username" required minlength="3" maxlength="50" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
             </div>
             <div class="mb-3">
-                <label class="form-label fw-semibold text-secondary">Parolă</label>
-                <input type="password" name="password" class="form-control" placeholder="Minim 6 caractere" required />
+                <label class="form-label fw-semibold text-secondary">Parola</label>
+                <input type="password" th:field="*{password}" class="form-control" placeholder="Minim 6 caractere" required minlength="6" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
             </div>
             <div class="mb-4">
                 <label class="form-label fw-semibold text-secondary">Atribuire Rol Profesional</label>
-                <select name="rol" class="form-select" required>
-                    <option value="ADMIN">Manager (Drept complet de ștergere)</option>
-                    <option value="USER">Ospătar (Doar vizualizare & căutare)</option>
+                <select th:field="*{rol}" class="form-select" required>
+                    <option value="">-- Selecteaza rolul --</option>
+                    <option value="ADMIN">Manager (drept complet)</option>
+                    <option value="USER">Ospatar</option>
                 </select>
+                <div class="text-danger small" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}"></div>
             </div>
-            <button type="submit" class="btn btn-success w-100 fw-bold py-2 btn-animate shadow-sm fs-5">Creează Contul</button>
+            <button type="submit" class="btn btn-success w-100 fw-bold py-2 btn-animate shadow-sm fs-5">Creeaza Contul</button>
         </form>
     </div>
 </div>

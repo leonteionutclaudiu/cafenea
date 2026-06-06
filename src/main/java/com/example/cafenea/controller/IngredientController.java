@@ -3,8 +3,10 @@ package com.example.cafenea.controller;
 
 import com.example.cafenea.model.Ingredient;
 import com.example.cafenea.service.IngredientService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 @Controller
@@ -46,7 +48,12 @@ public class IngredientController {
     }
 
     @PostMapping("/salveaza")
-    public String salveazaIngredient(@ModelAttribute("ingredient") Ingredient ingredient) {
+    public String salveazaIngredient(@Valid @ModelAttribute("ingredient") Ingredient ingredient,
+                                     BindingResult result) {
+        if (result.hasErrors()) {
+            return "formular-ingredient";
+        }
+
         ingredientService.saveIngredient(ingredient);
         return "redirect:/ingrediente";
     }

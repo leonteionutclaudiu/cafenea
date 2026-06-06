@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark m-0">Gestionare Mese</h2>
+            <p class="text-muted small m-0">Administrare mese disponibile in cafenea</p>
+        </div>
+        <a href="/mese/nou" class="btn btn-success fw-bold">Adauga Masa</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="table-responsive glass-card p-3">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Numar masa</th>
+                <th>Status</th>
+                <th class="text-end">Actiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="masa : ${mese}">
+                <td th:text="${masa.id}">1</td>
+                <td th:text="${masa.numarMasa}">1</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${masa.status == 'LIBERA'} ? ' text-bg-success' : ' text-bg-warning'"
+                          th:text="${masa.status}">LIBERA</span>
+                </td>
+                <td class="text-end">
+                    <a th:href="@{/mese/editeaza/{id}(id=${masa.id})}" class="btn btn-sm btn-primary">Editeaza</a>
+                    <a th:href="@{/mese/sterge/{id}(id=${masa.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Sigur vrei sa stergi aceasta masa?')">Sterge</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(mese)}">
+                <td colspan="4" class="text-center text-muted py-4">Nu exista mese inregistrate.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

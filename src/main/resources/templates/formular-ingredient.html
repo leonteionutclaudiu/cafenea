@@ -13,11 +13,13 @@
             <div class="col-12">
                 <label class="form-label fw-bold">Nume Ingredient</label>
                 <input type="text" th:field="*{numeIngredient}" class="form-control" required placeholder="ex: Boabe Cafea Arabica" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('numeIngredient')}" th:errors="*{numeIngredient}"></div>
             </div>
 
             <div class="col-12">
                 <label class="form-label fw-bold">Cantitate în Stoc</label>
                 <input type="number" th:field="*{cantitateStoc}" class="form-control" required min="0" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('cantitateStoc')}" th:errors="*{cantitateStoc}"></div>
             </div>
 
             <div class="col-12 d-flex gap-2 mt-4">
