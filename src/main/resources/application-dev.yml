@@ -3,12 +3,13 @@ server:
 
 spring:
   application:
-    name: serviciu-cafenea # <--- Această linie îi dă nume de microserviciu în rețea!
+    name: serviciu-cafenea
   datasource:
     url: jdbc:postgresql://localhost:5432/cafenea_db
     username: postgres
     password: root
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -16,7 +17,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-# Configurare minimală de rețea (Se preface că trimite datele către un punct central)
 eureka:
   client:
     register-with-eureka: false

@@ -1,8 +1,8 @@
 package com.example.cafenea.controller;
 
 import com.example.cafenea.model.Produs;
+import com.example.cafenea.service.CategorieService;
 import com.example.cafenea.service.ProdusService;
-import com.example.cafenea.repository.CategorieProdusRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,7 @@ public class ProdusController {
     private ProdusService produsService;
 
     @Autowired
-    private CategorieProdusRepository categorieProdusRepository;
+    private CategorieService categorieService;
 
     // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare uniformizată
     @GetMapping("/produse")
@@ -43,7 +43,7 @@ public class ProdusController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("categorieSelectata", categorieId);
 
-        model.addAttribute("categorii", categorieProdusRepository.findAll());
+        model.addAttribute("categorii", categorieService.getAllCategorii());
 
         return "produse";
     }
@@ -51,7 +51,7 @@ public class ProdusController {
     @GetMapping("/produse/nou")
     public String formularProdusNou(Model model) {
         model.addAttribute("produs", new Produs());
-        model.addAttribute("categorii", categorieProdusRepository.findAll());
+        model.addAttribute("categorii", categorieService.getAllCategorii());
         return "formular-produs";
     }
 
@@ -60,14 +60,14 @@ public class ProdusController {
         Produs produsExistent = produsService.getProdusDupaId(id);
 
         model.addAttribute("produs", produsExistent);
-        model.addAttribute("categorii", categorieProdusRepository.findAll());
+        model.addAttribute("categorii", categorieService.getAllCategorii());
         return "formular-produs";
     }
 
     @PostMapping("/produse/salveaza")
     public String salveazaProdus(@Valid @ModelAttribute("produs") Produs produs, BindingResult result, Model model) {
         if (result.hasErrors()) {
-            model.addAttribute("categorii", categorieProdusRepository.findAll());
+            model.addAttribute("categorii", categorieService.getAllCategorii());
             return "formular-produs";
         }
         produsService.salveazaProdus(produs);

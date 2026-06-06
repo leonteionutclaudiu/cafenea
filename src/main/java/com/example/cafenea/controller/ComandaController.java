@@ -3,36 +3,43 @@ package com.example.cafenea.controller;
 import com.example.cafenea.model.Comanda;
 import com.example.cafenea.model.Masa;
 import com.example.cafenea.service.ComandaService;
+import com.example.cafenea.service.MasaService;
 import com.example.cafenea.service.ProdusService;
-import com.example.cafenea.repository.UtilizatorRepository;
-import com.example.cafenea.repository.MasaRepository;
+import com.example.cafenea.service.UtilizatorService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/comenzi")
 public class ComandaController {
 
-    private final MasaRepository masaRepository;
     private final ComandaService comandaService;
     private final ProdusService produsService;
-    private final UtilizatorRepository utilizatorRepository;
+    private final UtilizatorService utilizatorService;
+    private final MasaService masaService;
 
     public ComandaController(ComandaService comandaService,
                              ProdusService produsService,
-                             UtilizatorRepository utilizatorRepository,
-                             MasaRepository masaRepository) {
+                             UtilizatorService utilizatorService,
+                             MasaService masaService) {
         this.comandaService = comandaService;
         this.produsService = produsService;
-        this.utilizatorRepository = utilizatorRepository;
-        this.masaRepository = masaRepository;
+        this.utilizatorService = utilizatorService;
+        this.masaService = masaService;
     }
 
     @GetMapping
@@ -60,9 +67,7 @@ public class ComandaController {
     @GetMapping("/nou")
     public String formularComanda(Model model) {
         model.addAttribute("comanda", new Comanda());
-        model.addAttribute("utilizatori", utilizatorRepository.findAll());
-        model.addAttribute("toateProdusele", produsService.getAllProduse());
-        model.addAttribute("toateMesele", masaRepository.findAll());
+        addFormData(model);
         return "formular-comanda";
     }
 
@@ -78,46 +83,35 @@ public class ComandaController {
         }
 
         if (result.hasErrors()) {
-            model.addAttribute("utilizatori", utilizatorRepository.findAll());
-            model.addAttribute("toateProdusele", produsService.getAllProduse());
-            model.addAttribute("toateMesele", masaRepository.findAll());
+            addFormData(model);
             return "formular-comanda";
         }
 
-        // 1. Logica pentru gestionarea stării meselor (Editare vs Creare)
         if (comanda.getId() != null) {
             Comanda comandaVeche = comandaService.getComandaById(comanda.getId());
             Masa masaVeche = comandaVeche.getMasa();
 
-            // Dacă masa s-a schimbat sau s-a renunțat la ea (de la masă la pachet)
-            if (masaVeche != null) {
-                if (comanda.getMasa() == null || !masaVeche.getId().equals(comanda.getMasa().getId())) {
-                    masaVeche.setStatus("LIBERA");
-                    masaRepository.save(masaVeche);
-                }
+            if (masaVeche != null && (comanda.getMasa() == null || !masaVeche.getId().equals(comanda.getMasa().getId()))) {
+                masaVeche.setStatus("LIBERA");
+                masaService.salveazaMasa(masaVeche);
             }
         }
 
-        // 2. Setăm masa nouă ca ocupată (dacă a fost selectată)
         if (comanda.getMasa() != null && comanda.getMasa().getId() != null) {
-            Masa masaNoua = masaRepository.findById(comanda.getMasa().getId()).orElse(null);
-            if (masaNoua != null) {
-                comanda.setMasa(masaNoua);
-                masaNoua.setStatus("OCUPATA");
-                masaRepository.save(masaNoua);
-            }
+            Masa masaNoua = masaService.getMasaById(comanda.getMasa().getId());
+            comanda.setMasa(masaNoua);
+            masaNoua.setStatus("OCUPATA");
+            masaService.salveazaMasa(masaNoua);
         } else {
-            // Dacă utilizatorul a ales "La pachet" (value="")
             comanda.setMasa(null);
         }
 
-        // 3. Logica de prelucrare a produselor
-        List<Long> listaIduriCuDuplicate = new java.util.ArrayList<>();
-        if (produseIds != null) {
-            for (Long pId : produseIds) {
-                String cantitateStr = request.getParameter("cantitate_" + pId);
-                int cantitate = (cantitateStr != null && !cantitateStr.isEmpty()) ? Integer.parseInt(cantitateStr) : 1;
-                for (int i = 0; i < cantitate; i++) listaIduriCuDuplicate.add(pId);
+        List<Long> listaIduriCuDuplicate = new ArrayList<>();
+        for (Long pId : produseIds) {
+            String cantitateStr = request.getParameter("cantitate_" + pId);
+            int cantitate = (cantitateStr != null && !cantitateStr.isEmpty()) ? Integer.parseInt(cantitateStr) : 1;
+            for (int i = 0; i < cantitate; i++) {
+                listaIduriCuDuplicate.add(pId);
             }
         }
 
@@ -133,7 +127,7 @@ public class ComandaController {
             Masa masa = comanda.getMasa();
             if (masa != null) {
                 masa.setStatus("LIBERA");
-                masaRepository.save(masa);
+                masaService.salveazaMasa(masa);
             }
         }
 
@@ -148,7 +142,7 @@ public class ComandaController {
         if (comanda.getMasa() != null) {
             Masa masa = comanda.getMasa();
             masa.setStatus("LIBERA");
-            masaRepository.save(masa);
+            masaService.salveazaMasa(masa);
         }
         comandaService.stergeComanda(id);
         return "redirect:/comenzi";
@@ -162,9 +156,13 @@ public class ComandaController {
             return "redirect:/comenzi";
         }
         model.addAttribute("comanda", comandaExistenta);
-        model.addAttribute("utilizatori", utilizatorRepository.findAll());
-        model.addAttribute("toateProdusele", produsService.getAllProduse());
-        model.addAttribute("toateMesele", masaRepository.findAll());
+        addFormData(model);
         return "formular-comanda";
+    }
+
+    private void addFormData(Model model) {
+        model.addAttribute("utilizatori", utilizatorService.getAllUtilizatori());
+        model.addAttribute("toateProdusele", produsService.getAllProduse());
+        model.addAttribute("toateMesele", masaService.getAllMese());
     }
 }

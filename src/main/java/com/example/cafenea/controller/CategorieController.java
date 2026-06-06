@@ -1,25 +1,31 @@
 package com.example.cafenea.controller;
-import jakarta.validation.constraints.NotBlank;
+
 import com.example.cafenea.model.CategorieProdus;
-import com.example.cafenea.repository.CategorieProdusRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.cafenea.service.CategorieService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/categorii")
 public class CategorieController {
 
-    @Autowired
-    private CategorieProdusRepository categorieProdusRepository;
+    private final CategorieService categorieService;
 
-    // Afișează lista și formularul (care poate fi gol pentru adăugare SAU precompletat pentru editare)
+    public CategorieController(CategorieService categorieService) {
+        this.categorieService = categorieService;
+    }
+
     @GetMapping
     public String listeazaCategorii(Model model) {
-        model.addAttribute("listaCategorii", categorieProdusRepository.findAll());
+        model.addAttribute("listaCategorii", categorieService.getAllCategorii());
         if (!model.containsAttribute("categorieNoua")) {
             model.addAttribute("categorieNoua", new CategorieProdus());
         }
@@ -32,33 +38,27 @@ public class CategorieController {
                                     Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("listaCategorii", categorieProdusRepository.findAll());
+            model.addAttribute("listaCategorii", categorieService.getAllCategorii());
             return "categorii";
         }
 
-        categorieProdusRepository.save(categorie);
+        categorieService.salveazaCategorie(categorie);
         return "redirect:/categorii";
     }
 
-    // Ruta GET pentru Editare: Pune categoria selectată în formularul de sus
     @GetMapping("/editeaza/{id}")
     public String pregatesteEditare(@PathVariable Long id, Model model) {
-        CategorieProdus catExistenta = categorieProdusRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Categoria nu există!"));
-
-        model.addAttribute("listaCategorii", categorieProdusRepository.findAll());
-        model.addAttribute("categorieNoua", catExistenta); // Formularul va avea acum datele ei și ID-ul ascuns
+        model.addAttribute("listaCategorii", categorieService.getAllCategorii());
+        model.addAttribute("categorieNoua", categorieService.getCategorieById(id));
         return "categorii";
     }
 
-    // Ruta GET pentru Ștergere
     @GetMapping("/sterge/{id}")
-    public String stergeCategorie(@PathVariable Long id) {
+    public String stergeCategorie(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            categorieProdusRepository.deleteById(id);
+            categorieService.stergeCategorie(id);
         } catch (Exception e) {
-            // Dacă categoria are produse legate de ea, baza de date va bloca ștergerea (Foreign Key Constraint)
-            return "redirect:/categorii?eroare=true";
+            redirectAttributes.addFlashAttribute("eroare", "Categoria nu poate fi stearsa deoarece are produse asociate.");
         }
         return "redirect:/categorii";
     }

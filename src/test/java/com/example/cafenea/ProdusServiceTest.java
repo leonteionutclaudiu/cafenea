@@ -8,12 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ActiveProfiles("test") // Activează profilul H2 pentru teste conform cerinței 3
 public class ProdusServiceTest {
@@ -74,5 +79,59 @@ public class ProdusServiceTest {
 
         // Ne asigurăm că metoda de ștergere nu a fost apelată greșit
         verify(produsRepository, never()).deleteById(999L);
+    }
+
+    @Test
+    void testGetAllProduse() {
+        when(produsRepository.findAll()).thenReturn(List.of(new Produs()));
+
+        assertEquals(1, produsService.getAllProduse().size());
+    }
+
+    @Test
+    void testStergeProdusExistent() {
+        when(produsRepository.existsById(1L)).thenReturn(true);
+
+        produsService.stergeProdus(1L);
+
+        verify(produsRepository).deleteById(1L);
+    }
+
+    @Test
+    void testGetProdusDupaIdAruncaExceptieCandNuExista() {
+        when(produsRepository.findById(55L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> produsService.getProdusDupaId(55L));
+    }
+
+    @Test
+    void testPaginareFaraFiltre() {
+        when(produsRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(new Produs())));
+
+        assertEquals(1, produsService.getProdusePaginate("", null, 1, 5, "nume", "asc").getTotalElements());
+    }
+
+    @Test
+    void testPaginareCuCautare() {
+        when(produsRepository.findByNumeContainingIgnoreCase(eq("espresso"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new Produs())));
+
+        assertEquals(1, produsService.getProdusePaginate("espresso", null, 1, 5, "pret", "desc").getTotalElements());
+    }
+
+    @Test
+    void testPaginareCuCategorie() {
+        when(produsRepository.findByCategorieId(eq(2L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new Produs())));
+
+        assertEquals(1, produsService.getProdusePaginate("", 2L, 1, 5, "id", "asc").getTotalElements());
+    }
+
+    @Test
+    void testPaginareCuCautareSiCategorie() {
+        when(produsRepository.findByNumeContainingIgnoreCaseAndCategorieId(eq("latte"), eq(2L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new Produs())));
+
+        assertEquals(1, produsService.getProdusePaginate("latte", 2L, 1, 5, "nume", "asc").getTotalElements());
     }
 }

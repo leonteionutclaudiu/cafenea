@@ -2,13 +2,12 @@ package com.example.cafenea.config;
 
 import com.example.cafenea.model.Utilizator;
 import com.example.cafenea.repository.UtilizatorRepository;
-import com.example.cafenea.repository.ComandaRepository;
-import com.example.cafenea.repository.CategorieProdusRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,7 +28,7 @@ public class SecurityConfig {
         return username -> utilizatorRepository.findByUsername(username)
                 .map(u -> User.withUsername(u.getUsername())
                         .password(u.getPassword())
-                        .roles(u.getRol()) // Spring adaugă prefixul ROLE_ automat
+                        .roles(u.getRol())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilizator inexistent: " + username));
     }
@@ -47,15 +46,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider, UserDetailsService userDetailsService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationProvider authenticationProvider,
+                                                   UserDetailsService userDetailsService) throws Exception {
         http
-                .csrf(csrf -> {})
+                .csrf(Customizer.withDefaults())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/register").hasRole("ADMIN")
-                        // Permite ștergerea pentru ADMIN sau MANAGER
+                        .requestMatchers("/register", "/mese/**", "/categorii/**").hasRole("ADMIN")
+                        .requestMatchers("/produse/nou", "/produse/editeaza/**", "/produse/sterge/**").hasRole("ADMIN")
+                        .requestMatchers("/ingrediente/nou", "/ingrediente/editeaza/**", "/ingrediente/sterge/**").hasRole("ADMIN")
+                        .requestMatchers("/comenzi/sterge/**").hasRole("ADMIN")
                         .requestMatchers("/utilizatori/sterge/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/h2-console/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -69,6 +74,11 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
+                )
+                .rememberMe(rememberMe -> rememberMe
+                        .key("cafenea-remember-me-key")
+                        .tokenValiditySeconds(14 * 24 * 60 * 60)
+                        .userDetailsService(userDetailsService)
                 );
 
         return http.build();
@@ -76,16 +86,14 @@ public class SecurityConfig {
 
     @Bean
     public CommandLineRunner initDatabase(UtilizatorRepository utilizatorRepository,
-                                          ComandaRepository comandaRepository,
-                                          CategorieProdusRepository categorieProdusRepository,
                                           PasswordEncoder passwordEncoder) {
         return args -> {
             if (utilizatorRepository.findByUsername("manager").isEmpty()) {
-                Utilizator m = new Utilizator();
-                m.setUsername("manager");
-                m.setPassword(passwordEncoder.encode("manager123"));
-                m.setRol("ADMIN");
-                utilizatorRepository.save(m);
+                Utilizator manager = new Utilizator();
+                manager.setUsername("manager");
+                manager.setPassword(passwordEncoder.encode("manager123"));
+                manager.setRol("ADMIN");
+                utilizatorRepository.save(manager);
             }
         };
     }

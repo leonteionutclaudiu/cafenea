@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container mt-5" style="max-width: 620px;">
+    <div class="glass-card p-4">
+        <h3 class="fw-bold text-dark mb-4"
+            th:text="${detaliu.id != null} ? 'Editeaza Detaliu Comanda' : 'Adauga Detaliu Comanda'">Adauga Detaliu</h3>
+
+        <div th:if="${eroare}" class="alert alert-danger" th:text="${eroare}"></div>
+
+        <form th:action="@{/detalii-comenzi/salveaza}" th:object="${detaliu}" method="post" class="row g-3">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="col-12">
+                <label class="form-label fw-bold">Comanda</label>
+                <select th:field="*{comanda}" class="form-select" required>
+                    <option value="">-- Selecteaza comanda --</option>
+                    <option th:each="comanda : ${comenzi}"
+                            th:value="${comanda.id}"
+                            th:text="'Comanda #' + ${comanda.id} + ' - ' + ${comanda.status}">
+                    </option>
+                </select>
+                <div class="text-danger small" th:if="${#fields.hasErrors('comanda')}" th:errors="*{comanda}"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold">Produs</label>
+                <select th:field="*{produs}" class="form-select" required>
+                    <option value="">-- Selecteaza produsul --</option>
+                    <option th:each="produs : ${produse}"
+                            th:value="${produs.id}"
+                            th:text="${produs.nume} + ' (' + ${produs.pret} + ' RON)'">
+                    </option>
+                </select>
+                <div class="text-danger small" th:if="${#fields.hasErrors('produs')}" th:errors="*{produs}"></div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Cantitate</label>
+                <input type="number" th:field="*{cantitate}" class="form-control" required min="1" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('cantitate')}" th:errors="*{cantitate}"></div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Pret salvat</label>
+                <input type="number" th:field="*{pretSalvat}" class="form-control" min="0" step="0.01" placeholder="Se completeaza din produs" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('pretSalvat')}" th:errors="*{pretSalvat}"></div>
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success w-100 fw-bold">Salveaza</button>
+                <a href="/detalii-comenzi" class="btn btn-outline-secondary w-100 fw-bold">Anuleaza</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

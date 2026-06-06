@@ -37,6 +37,10 @@ public class ComandaService {
         return comandaRepository.findAll(pageable);
     }
 
+    public List<Comanda> getAllComenzi() {
+        return comandaRepository.findAll();
+    }
+
     @Transactional // Adăugat pentru a asigura consistența în baza de date
     public void salveazaComanda(Comanda comanda, List<Long> produseIds) {
         List<Produs> listaProduseComplete = new ArrayList<>();

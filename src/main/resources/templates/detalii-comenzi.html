@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark m-0">Detalii Comenzi</h2>
+            <p class="text-muted small m-0">Administrare linii individuale din comenzi</p>
+        </div>
+        <a href="/detalii-comenzi/nou" class="btn btn-success fw-bold">Adauga Detaliu</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="table-responsive glass-card p-3">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Comanda</th>
+                <th>Produs</th>
+                <th>Cantitate</th>
+                <th>Pret salvat</th>
+                <th>Subtotal</th>
+                <th class="text-end">Actiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="detaliu : ${detalii}">
+                <td th:text="${detaliu.id}">1</td>
+                <td th:text="${detaliu.comanda != null ? '#' + detaliu.comanda.id : 'Nespecificata'}">#1</td>
+                <td th:text="${detaliu.produs != null ? detaliu.produs.nume : 'Nespecificat'}">Espresso</td>
+                <td th:text="${detaliu.cantitate}">1</td>
+                <td th:text="${detaliu.pretSalvat} + ' RON'">10 RON</td>
+                <td th:text="${detaliu.subtotal} + ' RON'">10 RON</td>
+                <td class="text-end">
+                    <a th:href="@{/detalii-comenzi/editeaza/{id}(id=${detaliu.id})}" class="btn btn-sm btn-primary">Editeaza</a>
+                    <a th:href="@{/detalii-comenzi/sterge/{id}(id=${detaliu.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Sigur vrei sa stergi acest detaliu?')">Sterge</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(detalii)}">
+                <td colspan="7" class="text-center text-muted py-4">Nu exista detalii de comanda inregistrate.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

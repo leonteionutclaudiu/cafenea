@@ -1,32 +1,35 @@
 package com.example.cafenea.controller;
 
+import com.example.cafenea.model.ProfilUtilizator;
 import com.example.cafenea.model.Utilizator;
-import com.example.cafenea.repository.UtilizatorRepository;
 import com.example.cafenea.service.UtilizatorService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.security.Principal;
-import org.springframework.security.access.AccessDeniedException;
 
 @Controller
 @RequestMapping("/utilizatori")
 public class UtilizatorController {
 
     private final UtilizatorService utilizatorService;
-    private final UtilizatorRepository utilizatorRepository;
 
-    public UtilizatorController(UtilizatorService utilizatorService, UtilizatorRepository utilizatorRepository) {
+    public UtilizatorController(UtilizatorService utilizatorService) {
         this.utilizatorService = utilizatorService;
-        this.utilizatorRepository = utilizatorRepository;
     }
 
     @GetMapping
@@ -54,29 +57,23 @@ public class UtilizatorController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping("/sterge/{id}")
-    public String stergeUtilizator(@PathVariable Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-
-        Utilizator userToDelete = utilizatorRepository.findById(id).orElse(null);
-
-        if (userToDelete == null) {
-            redirectAttributes.addFlashAttribute("error", "Utilizatorul nu există!");
-            return "redirect:/utilizatori";
-        }
+    public String stergeUtilizator(@PathVariable Long id,
+                                   HttpServletRequest request,
+                                   RedirectAttributes redirectAttributes) {
 
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        boolean isCurrentUser = userToDelete.getUsername().equals(currentUsername);
 
         try {
-            utilizatorRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("success", "Utilizator șters cu succes!");
+            boolean deletedCurrentUser = utilizatorService.stergeUtilizator(id, currentUsername);
+            redirectAttributes.addFlashAttribute("success", "Utilizator sters cu succes!");
 
-            if (isCurrentUser) {
+            if (deletedCurrentUser) {
                 request.getSession().invalidate();
                 SecurityContextHolder.clearContext();
                 return "redirect:/login?logout";
             }
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Eroare: Utilizatorul are comenzi asociate!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/utilizatori";
@@ -84,35 +81,18 @@ public class UtilizatorController {
 
     @PostMapping("/salveaza-profil")
     public String salveazaProfil(
-            @Valid @ModelAttribute("profil") com.example.cafenea.model.ProfilUtilizator profil,
-            BindingResult result, // BindingResult trebuie să stea imediat după @Valid
+            @Valid @ModelAttribute("profil") ProfilUtilizator profil,
+            BindingResult result,
             @RequestParam("utilizatorId") Long utilizatorId,
-            Model model, // Adăugăm Model pentru a putea retrimite obiectele în pagină
+            Model model,
             RedirectAttributes redirectAttributes) {
 
-        // 1. Verificăm dacă există erori de validare (Regex-ul telefonului, etc.)
         if (result.hasErrors()) {
-            // Trebuie să reîncărcăm utilizatorul pentru a avea acces la el în formular
-            Utilizator utilizator = utilizatorRepository.findById(utilizatorId)
-                    .orElseThrow(() -> new IllegalArgumentException("Utilizator negăsit"));
-
-            model.addAttribute("utilizator", utilizator);
-            // Returnăm pagina de editare. Aici Thymeleaf va afișa erorile prin th:errors
+            model.addAttribute("utilizator", utilizatorService.getUtilizatorById(utilizatorId));
             return "profil-utilizator";
         }
 
-        // 2. Logica de salvare (doar dacă datele sunt valide)
-        Utilizator utilizator = utilizatorRepository.findById(utilizatorId)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizator negăsit"));
-
-        if (utilizator.getProfil() != null) {
-            profil.setId(utilizator.getProfil().getId());
-        }
-
-        profil.setUtilizator(utilizator);
-        utilizator.setProfil(profil);
-
-        utilizatorRepository.save(utilizator);
+        utilizatorService.salveazaProfil(utilizatorId, profil);
 
         redirectAttributes.addFlashAttribute("success", "Profil actualizat cu succes!");
         return "redirect:/utilizatori";
@@ -120,28 +100,22 @@ public class UtilizatorController {
 
     @GetMapping("/editeaza-profil/{id}")
     public String editeazaProfil(@PathVariable Long id, Model model, Principal principal) {
-        // 1. Căutăm utilizatorul
-        Utilizator utilizator = utilizatorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizator invalid"));
+        Utilizator utilizator = utilizatorService.getUtilizatorById(id);
 
-        // 2. Verificăm permisiunile: este admin/manager SAU este chiar el?
         boolean isAdminOrManager = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
 
         if (!isAdminOrManager && !utilizator.getUsername().equals(principal.getName())) {
-            throw new AccessDeniedException("Nu ai voie să modifici acest profil!");
+            throw new AccessDeniedException("Nu ai voie sa modifici acest profil!");
         }
 
-        // 3. Verificăm dacă avem deja un obiect "profil" în model (adus de la o validare eșuată)
-        // Dacă NU avem, atunci inițializăm un profil nou sau luăm profilul existent din DB
         if (!model.containsAttribute("profil")) {
             if (utilizator.getProfil() == null) {
-                utilizator.setProfil(new com.example.cafenea.model.ProfilUtilizator());
+                utilizator.setProfil(new ProfilUtilizator());
             }
             model.addAttribute("profil", utilizator.getProfil());
         }
 
-        // 4. Adăugăm utilizatorul în model (pentru a avea acces la datele lui în pagină)
         model.addAttribute("utilizator", utilizator);
 
         return "profil-utilizator";

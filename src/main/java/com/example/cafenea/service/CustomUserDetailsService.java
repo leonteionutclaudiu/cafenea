@@ -2,7 +2,6 @@ package com.example.cafenea.service;
 
 import com.example.cafenea.model.Utilizator;
 import com.example.cafenea.repository.UtilizatorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,8 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UtilizatorRepository utilizatorRepository;
+    private final UtilizatorRepository utilizatorRepository;
+
+    public CustomUserDetailsService(UtilizatorRepository utilizatorRepository) {
+        this.utilizatorRepository = utilizatorRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

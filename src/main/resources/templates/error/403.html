@@ -3,8 +3,8 @@
 <body>
 <div class="container text-center mt-5">
     <div class="p-5 glass-card mx-auto" style="max-width: 620px;">
-        <h1 class="display-6 fw-bold text-danger mt-2 mb-3">A aparut o eroare</h1>
-        <p class="lead text-muted mb-4">Pagina cautata nu exista sau a intervenit o problema in sistem.</p>
+        <h1 class="display-6 fw-bold text-danger mt-2 mb-3">403 - Acces refuzat</h1>
+        <p class="lead text-muted mb-4" th:text="${message}">Nu ai drepturi pentru aceasta operatie.</p>
         <a href="/" class="btn btn-dark fw-bold px-4">Inapoi la pagina principala</a>
     </div>
 </div>
