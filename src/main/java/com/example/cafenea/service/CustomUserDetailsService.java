@@ -22,11 +22,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Utilizator utilizator = utilizatorRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilizator negăsit: " + username));
 
-        // Transmitem datele către Spring Security. Îi adăugăm manual prefixul "ROLE_"
         return User.builder()
                 .username(utilizator.getUsername())
                 .password(utilizator.getPassword())
-                .roles(utilizator.getRol()) // ADMIN devine ROLE_ADMIN, USER devine ROLE_USER [cite: 83]
+                .roles(utilizator.getRol())
                 .build();
     }
 }

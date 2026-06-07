@@ -28,7 +28,7 @@ public class Utilizator {
 
     @NotBlank(message = "Rolul este obligatoriu.")
     @Pattern(regexp = "ADMIN|USER|MANAGER", message = "Rolul trebuie sa fie ADMIN, USER sau MANAGER.")
-    private String rol; // ADMIN (manager), USER (ospatar) sau MANAGER.
+    private String rol;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profil_id", referencedColumnName = "id")

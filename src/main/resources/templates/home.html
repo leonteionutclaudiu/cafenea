@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container text-center mt-5 animate__animated animate__zoomIn">
-    <div class="p-5 glass-card mx-auto" style="max-width: 750px;">
+<div class="container-lg text-center">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-lg-5">
         <span class="fs-1">☕</span>
         <h1 class="display-5 fw-bold text-dark mt-2 mb-3">
             Sistem Management Cafenea
@@ -10,12 +10,9 @@
         <p class="lead text-muted mb-4">
             Platformă modernă pentru controlul stocurilor, modificarea prețurilor în timp real și managementul angajaților.
         </p>
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            <!-- Acest buton îl vede TOATĂ LUMEA care este logată -->
-            <a href="/produse" class="btn btn-dark btn-lg fw-bold px-4 btn-animate shadow-sm">📋 Catalog Produse</a>
-
-            <!-- Acest buton apare DOAR dacă utilizatorul curent este MANAGER (ADMIN) -->
-            <a href="/register" sec:authorize="hasRole('ADMIN')" class="btn btn-primary btn-lg fw-bold px-4 btn-animate shadow-sm">👤 Înregistrare Angajat Nou</a>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4">
+            <a href="/produse" class="btn btn-dark btn-lg fw-bold px-4 shadow-sm">📋 Catalog Produse</a>
+            <a href="/register" sec:authorize="hasRole('ADMIN')" class="btn btn-primary btn-lg fw-bold px-4 shadow-sm">👤 Înregistrare Angajat Nou</a>
         </div>
     </div>
 </div>

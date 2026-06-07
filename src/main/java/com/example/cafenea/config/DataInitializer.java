@@ -24,7 +24,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        // 1. Inițializare Utilizatori
         if (utilizatorRepository.count() == 0) {
             Utilizator managerImplicit = new Utilizator();
             managerImplicit.setUsername("manager");
@@ -34,7 +33,6 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Manager generat.");
         }
 
-        // 2. Inițializare Mese (nou)
         if (masaRepository.count() == 0) {
             System.out.println("🪑 Generăm mesele cafenelei...");
             for (int i = 1; i <= 10; i++) {

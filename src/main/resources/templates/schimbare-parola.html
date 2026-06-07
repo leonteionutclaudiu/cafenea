@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container d-flex justify-content-center mt-5">
-    <div class="card p-4 border-0 glass-card animate__animated animate__fadeInUp" style="width: 100%; max-width: 450px;">
+<div class="container-sm">
+    <div class="card p-4 border-0 shadow-sm rounded-4">
 
         <div class="text-center mb-4">
             <h3 class="fw-bold text-dark">🔑 Schimbare Parolă</h3>
             <p class="text-muted small">Actualizează credențialele contului tău curent</p>
         </div>
 
-        <div th:if="${eroare}" class="alert alert-danger text-center py-2 small animate__animated animate__shakeX" th:text="${eroare}">
+        <div th:if="${eroare}" class="alert alert-danger text-center py-2 small" th:text="${eroare}">
             Eroare text.
         </div>
 
-        <div th:if="${succes}" class="alert alert-success text-center py-2 small animate__animated animate__bounceIn" th:text="${succes}">
+        <div th:if="${succes}" class="alert alert-success text-center py-2 small" th:text="${succes}">
             Succes text.
         </div>
 
@@ -36,10 +36,10 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold py-2 btn-animate shadow-sm">
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold py-2 shadow-sm">
                     Modifică Parola
                 </button>
-                <a href="/" class="btn btn-light border px-3 py-2 btn-animate fw-medium">
+                <a href="/" class="btn btn-light border px-3 py-2 fw-medium">
                     Anulează
                 </a>
             </div>

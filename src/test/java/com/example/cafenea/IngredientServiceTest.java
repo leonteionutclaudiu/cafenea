@@ -2,6 +2,7 @@ package com.example.cafenea;
 
 import com.example.cafenea.model.Ingredient;
 import com.example.cafenea.repository.IngredientRepository;
+import com.example.cafenea.repository.ProdusRepository;
 import com.example.cafenea.service.IngredientService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,9 @@ class IngredientServiceTest {
 
     @Mock
     private IngredientRepository ingredientRepository;
+
+    @Mock
+    private ProdusRepository produsRepository;
 
     @InjectMocks
     private IngredientService ingredientService;
@@ -91,9 +95,20 @@ class IngredientServiceTest {
     @Test
     void deleteIngredientExistentSterge() {
         when(ingredientRepository.existsById(1L)).thenReturn(true);
+        when(produsRepository.existsByIngrediente_Id(1L)).thenReturn(false);
 
         ingredientService.deleteIngredient(1L);
 
         verify(ingredientRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteIngredientFolositDeProdusAruncaExceptie() {
+        when(ingredientRepository.existsById(1L)).thenReturn(true);
+        when(produsRepository.existsByIngrediente_Id(1L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> ingredientService.deleteIngredient(1L));
+
+        verify(ingredientRepository, never()).deleteById(1L);
     }
 }

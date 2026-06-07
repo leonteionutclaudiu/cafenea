@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container d-flex justify-content-center mt-5">
-    <div class="card p-4 border-0 glass-card animate__animated animate__backInUp" style="width: 100%; max-width: 430px;">
+<div class="container-sm">
+    <div class="card p-4 border-0 shadow-sm rounded-4">
         <div class="text-center mb-4">
             <h3 class="fw-bold text-dark">Inregistrare Angajat</h3>
             <p class="text-muted small">Datele se salveaza direct in PostgreSQL</p>
@@ -28,7 +28,7 @@
                 </select>
                 <div class="text-danger small" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}"></div>
             </div>
-            <button type="submit" class="btn btn-success w-100 fw-bold py-2 btn-animate shadow-sm fs-5">Creeaza Contul</button>
+            <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5">Creeaza Contul</button>
         </form>
     </div>
 </div>

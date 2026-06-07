@@ -16,7 +16,7 @@ public class Comanda {
 
     private LocalDateTime dataComanda;
     private Double totalPlata;
-    private String status; // PRIMITA, IN_PREPARARE, FINALIZATA
+    private String status;
 
     @Column(name = "numar_masa", nullable = true)
     private Integer numarMasa;
@@ -24,7 +24,7 @@ public class Comanda {
     @ManyToOne
     @JoinColumn(name = "utilizator_id")
     @NotNull(message = "Selectati ospatarul responsabil.")
-    private Utilizator utilizator; // Acesta reprezintă OSPĂTARUL
+    private Utilizator utilizator;
 
     @ManyToMany
     @JoinTable(
@@ -45,7 +45,6 @@ public class Comanda {
     @JoinColumn(name = "masa_id")
     private Masa masa;
     
-    // Getters și Setters
     public Masa getMasa() { return masa; }
     public void setMasa(Masa masa) { this.masa = masa; }
     public Long getId() { return id; }

@@ -57,8 +57,9 @@ public class CategorieController {
     public String stergeCategorie(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             categorieService.stergeCategorie(id);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("eroare", "Categoria nu poate fi stearsa deoarece are produse asociate.");
+            redirectAttributes.addFlashAttribute("succes", "Categoria a fost stearsa cu succes.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("eroare", e.getMessage());
         }
         return "redirect:/categorii";
     }

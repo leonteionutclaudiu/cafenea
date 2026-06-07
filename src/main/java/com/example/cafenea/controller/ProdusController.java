@@ -2,6 +2,7 @@ package com.example.cafenea.controller;
 
 import com.example.cafenea.model.Produs;
 import com.example.cafenea.service.CategorieService;
+import com.example.cafenea.service.IngredientService;
 import com.example.cafenea.service.ProdusService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ProdusController {
@@ -20,7 +22,9 @@ public class ProdusController {
     @Autowired
     private CategorieService categorieService;
 
-    // Ruta principală: Afișează tabelul cu produse, având Paginare și Sortare uniformizată
+    @Autowired
+    private IngredientService ingredientService;
+
     @GetMapping("/produse")
     public String listeazaProduse(
             @RequestParam(defaultValue = "") String keyword,
@@ -44,6 +48,7 @@ public class ProdusController {
         model.addAttribute("categorieSelectata", categorieId);
 
         model.addAttribute("categorii", categorieService.getAllCategorii());
+        model.addAttribute("ingrediente", ingredientService.getAllIngredients());
 
         return "produse";
     }
@@ -52,6 +57,7 @@ public class ProdusController {
     public String formularProdusNou(Model model) {
         model.addAttribute("produs", new Produs());
         model.addAttribute("categorii", categorieService.getAllCategorii());
+        model.addAttribute("ingrediente", ingredientService.getAllIngredients());
         return "formular-produs";
     }
 
@@ -61,6 +67,7 @@ public class ProdusController {
 
         model.addAttribute("produs", produsExistent);
         model.addAttribute("categorii", categorieService.getAllCategorii());
+        model.addAttribute("ingrediente", ingredientService.getAllIngredients());
         return "formular-produs";
     }
 
@@ -68,6 +75,7 @@ public class ProdusController {
     public String salveazaProdus(@Valid @ModelAttribute("produs") Produs produs, BindingResult result, Model model) {
         if (result.hasErrors()) {
             model.addAttribute("categorii", categorieService.getAllCategorii());
+            model.addAttribute("ingrediente", ingredientService.getAllIngredients());
             return "formular-produs";
         }
         produsService.salveazaProdus(produs);
@@ -75,8 +83,13 @@ public class ProdusController {
     }
 
     @GetMapping("/produse/sterge/{id}")
-    public String stergeProdus(@PathVariable Long id) {
-        produsService.stergeProdus(id);
+    public String stergeProdus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            produsService.stergeProdus(id);
+            redirectAttributes.addFlashAttribute("success", "Produsul a fost sters cu succes.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/produse";
     }
 }

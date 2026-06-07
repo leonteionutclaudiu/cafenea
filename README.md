@@ -75,9 +75,8 @@ Entitati principale:
 - `Ingredient`
 - `Masa`
 - `Comanda`
-- `DetaliiComanda`
 
-`DetaliiComanda` este o entitate interna pentru detalierea liniilor de comanda si nu este expusa separat in UI prin CRUD propriu.
+Tabela `comanda_produse` este tabela de legatura generata automat de JPA pentru relatia `@ManyToMany` dintre `Comanda` si `Produs`.
 
 ## Diagrama ER
 
@@ -86,10 +85,9 @@ erDiagram
     UTILIZATOR ||--o| PROFIL_UTILIZATOR : are
     UTILIZATOR ||--o{ COMANDA : inregistreaza
     CATEGORIE_PRODUS ||--o{ PRODUS : contine
+    PRODUS }o--o{ INGREDIENT : foloseste
     PRODUS }o--o{ COMANDA : este_comandat
     MASA ||--o{ COMANDA : gazduieste
-    COMANDA ||--o{ DETALII_COMANDA : are
-    PRODUS ||--o{ DETALII_COMANDA : apare_in
 
     UTILIZATOR {
         long id PK
@@ -138,12 +136,14 @@ erDiagram
         long masa_id FK
     }
 
-    DETALII_COMANDA {
-        long id PK
+    COMANDA_PRODUSE {
         long comanda_id FK
         long produs_id FK
-        int cantitate
-        double pretSalvat
+    }
+
+    PRODUS_INGREDIENTE {
+        long produs_id FK
+        long ingredient_id FK
     }
 ```
 
@@ -154,19 +154,7 @@ erDiagram
 - `@OneToMany` / `@ManyToOne`: `Utilizator` - `Comanda`
 - `@OneToMany` / `@ManyToOne`: `Masa` - `Comanda`
 - `@ManyToMany`: `Comanda` - `Produs`
-
-## Cerinte obligatorii
-
-| Cerinta | Implementare |
-| --- | --- |
-| Model de date | 8 entitati, relatii `OneToOne`, `OneToMany`, `ManyToOne`, `ManyToMany`, diagrama ER in README |
-| CRUD complet | CRUD pentru produse, categorii, ingrediente, mese, comenzi si utilizatori/profil |
-| Multi-environment | `application-dev.yml` PostgreSQL, `application-test.yml` H2 |
-| Testing | teste unitare pentru service-uri si teste de integrare cu H2 |
-| Views si validare | Thymeleaf, formulare CRUD, Bean Validation, mesaje user-friendly |
-| Logging | SLF4J + Logback, fisiere separate pentru erori |
-| Paginare si sortare | produse, ingrediente, comenzi, utilizatori |
-| Spring Security | login custom, logout, BCrypt, roluri, protectie endpoint-uri, remember-me, CSRF activ |
+- `@ManyToMany`: `Produs` - `Ingredient`
 
 ## Arhitectura
 

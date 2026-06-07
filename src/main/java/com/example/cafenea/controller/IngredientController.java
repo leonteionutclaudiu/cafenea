@@ -1,4 +1,3 @@
-// IngredientController.java
 package com.example.cafenea.controller;
 
 import com.example.cafenea.model.Ingredient;
@@ -9,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/ingrediente")
 public class IngredientController {
@@ -65,8 +65,13 @@ public class IngredientController {
     }
 
     @GetMapping("/sterge/{id}")
-    public String stergeIngredient(@PathVariable Long id) {
-        ingredientService.deleteIngredient(id);
+    public String stergeIngredient(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            ingredientService.deleteIngredient(id);
+            redirectAttributes.addFlashAttribute("success", "Ingredientul a fost sters cu succes.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/ingrediente";
     }
 }

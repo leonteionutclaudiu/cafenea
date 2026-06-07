@@ -1,6 +1,7 @@
 package com.example.cafenea.service;
 
 import com.example.cafenea.model.Masa;
+import com.example.cafenea.repository.ComandaRepository;
 import com.example.cafenea.repository.MasaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,11 @@ public class MasaService {
     private static final Logger logger = LoggerFactory.getLogger(MasaService.class);
 
     private final MasaRepository masaRepository;
+    private final ComandaRepository comandaRepository;
 
-    public MasaService(MasaRepository masaRepository) {
+    public MasaService(MasaRepository masaRepository, ComandaRepository comandaRepository) {
         this.masaRepository = masaRepository;
+        this.comandaRepository = comandaRepository;
     }
 
     public List<Masa> getAllMese() {
@@ -46,6 +49,10 @@ public class MasaService {
         if ("OCUPATA".equals(masa.getStatus())) {
             logger.error("S-a incercat stergerea mesei ocupate cu ID-ul {}.", id);
             throw new IllegalArgumentException("Masa ocupata nu poate fi stearsa.");
+        }
+        if (comandaRepository.existsByMasa_Id(id)) {
+            logger.error("S-a incercat stergerea unei mese folosite in comenzi. ID: {}", id);
+            throw new IllegalArgumentException("Nu poti sterge masa deoarece exista comenzi asociate cu ea.");
         }
         logger.warn("Se sterge masa cu ID-ul {}.", id);
         masaRepository.deleteById(id);

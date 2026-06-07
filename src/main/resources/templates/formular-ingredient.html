@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::#formContent})}">
 <head><title>Formular Ingredient</title></head>
 <body>
-<div id="formContent" class="container mt-5 animate__animated animate__zoomIn" style="max-width: 500px;">
-    <div class="glass-card p-4">
+<div id="formContent" class="container-sm">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-lg-4">
         <h3 class="fw-bold text-dark mb-4 text-center"
             th:text="${ingredient.id != null} ? '📝 Editează Ingredient' : '➕ Adaugă Ingredient Nou'">Adaugă Ingredient</h3>
 
@@ -23,8 +23,8 @@
             </div>
 
             <div class="col-12 d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-success w-100 fw-bold btn-animate">💾 Salvează</button>
-                <a href="/ingrediente" class="btn btn-outline-secondary w-100 fw-bold btn-animate">Anulează</a>
+                <button type="submit" class="btn btn-success w-100 fw-bold">💾 Salvează</button>
+                <a href="/ingrediente" class="btn btn-outline-secondary w-100 fw-bold">Anulează</a>
             </div>
         </form>
     </div>

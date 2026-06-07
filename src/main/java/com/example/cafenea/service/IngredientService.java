@@ -1,8 +1,8 @@
-// IngredientService.java
 package com.example.cafenea.service;
 
 import com.example.cafenea.model.Ingredient;
 import com.example.cafenea.repository.IngredientRepository;
+import com.example.cafenea.repository.ProdusRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,13 @@ public class IngredientService {
     private static final Logger logger = LoggerFactory.getLogger(IngredientService.class);
 
     private final IngredientRepository ingredientRepository;
+    private final ProdusRepository produsRepository;
 
-    public IngredientService(IngredientRepository ingredientRepository) {
+    public IngredientService(IngredientRepository ingredientRepository, ProdusRepository produsRepository) {
         this.ingredientRepository = ingredientRepository;
+        this.produsRepository = produsRepository;
     }
 
-    // Metodă nouă pentru Paginare, Sortare și Căutare
     public Page<Ingredient> getIngredientePaginate(String keyword, int page, int size, String sortField, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
                 Sort.by(sortField).ascending() : Sort.by(sortField).descending();
@@ -55,6 +56,10 @@ public class IngredientService {
         if (!ingredientRepository.existsById(id)) {
             logger.error("S-a incercat stergerea unui ingredient inexistent. ID: {}", id);
             throw new IllegalArgumentException("Nu se poate sterge. Ingredientul nu exista.");
+        }
+        if (produsRepository.existsByIngrediente_Id(id)) {
+            logger.error("S-a incercat stergerea unui ingredient folosit de produse. ID: {}", id);
+            throw new IllegalArgumentException("Nu poti sterge ingredientul deoarece este folosit de unul sau mai multe produse.");
         }
         logger.warn("Se sterge ingredientul cu ID-ul {}.", id);
         ingredientRepository.deleteById(id);

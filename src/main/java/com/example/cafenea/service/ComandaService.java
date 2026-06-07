@@ -41,7 +41,7 @@ public class ComandaService {
         return comandaRepository.findAll();
     }
 
-    @Transactional // Adăugat pentru a asigura consistența în baza de date
+    @Transactional
     public void salveazaComanda(Comanda comanda, List<Long> produseIds) {
         List<Produs> listaProduseComplete = new ArrayList<>();
 
@@ -76,9 +76,6 @@ public class ComandaService {
             logger.error("LOG ERROR: S-a încercat ștergerea unei comenzi inexistente! ID: {}", id);
             throw new IllegalArgumentException("Comanda cu ID-ul " + id + " nu a fost găsită în baza de date.");
         }
-
-        // Notă: Dacă masa nu s-a eliberat automat prin controller la ștergere,
-        // poți adăuga aici logica de eliberare a mesei.
 
         comandaRepository.deleteById(id);
         logger.info("LOG INFO: Comanda {} a fost ștearsă.", id);

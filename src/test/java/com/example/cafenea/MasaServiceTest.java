@@ -1,6 +1,7 @@
 package com.example.cafenea;
 
 import com.example.cafenea.model.Masa;
+import com.example.cafenea.repository.ComandaRepository;
 import com.example.cafenea.repository.MasaRepository;
 import com.example.cafenea.service.MasaService;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,9 @@ class MasaServiceTest {
 
     @Mock
     private MasaRepository masaRepository;
+
+    @Mock
+    private ComandaRepository comandaRepository;
 
     @InjectMocks
     private MasaService masaService;
@@ -76,9 +80,25 @@ class MasaServiceTest {
         masa.setStatus("LIBERA");
 
         when(masaRepository.findById(2L)).thenReturn(Optional.of(masa));
+        when(comandaRepository.existsByMasa_Id(2L)).thenReturn(false);
 
         masaService.stergeMasa(2L);
 
         verify(masaRepository).deleteById(2L);
+    }
+
+    @Test
+    void stergeMasaCuComenziAsociateAruncaExceptie() {
+        Masa masa = new Masa();
+        masa.setId(2L);
+        masa.setNumarMasa(4);
+        masa.setStatus("LIBERA");
+
+        when(masaRepository.findById(2L)).thenReturn(Optional.of(masa));
+        when(comandaRepository.existsByMasa_Id(2L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> masaService.stergeMasa(2L));
+
+        verify(masaRepository, never()).deleteById(2L);
     }
 }

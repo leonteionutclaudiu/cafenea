@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container p-4 bg-white rounded-4 shadow-sm" style="max-width: 600px;">
+<div class="container-sm">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-lg-4">
 
     <h3 class="fw-bold text-dark mb-4"
         th:text="${produs.id != null} ? '📝 Editează Produs' : '➕ Adaugă Produs Nou'">Adaugă Produs Nou</h3>
@@ -34,11 +35,21 @@
             <div class="text-danger small" th:if="${#fields.hasErrors('categorie')}" th:errors="*{categorie}">Eroare categorie</div>
         </div>
 
+        <div class="col-12">
+            <label for="ingrediente" class="form-label fw-bold">Ingrediente</label>
+            <select th:field="*{ingrediente}" id="ingrediente" class="form-select" multiple size="5">
+                <option th:each="ingredient : ${ingrediente}"
+                        th:value="${ingredient.id}"
+                        th:text="${ingredient.numeIngredient}"></option>
+            </select>
+        </div>
+
         <div class="col-12 d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-success w-100 fw-bold">💾 Salvează în Sistem</button>
             <a href="/produse" class="btn btn-outline-secondary w-100 fw-bold">Anulează</a>
         </div>
     </form>
+    </div>
 </div>
 </body>
 </html>

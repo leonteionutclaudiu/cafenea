@@ -10,9 +10,7 @@ import java.util.Optional;
 @Repository
 public interface UtilizatorRepository extends JpaRepository<Utilizator, Long> {
 
-    // Căutare exactă după username (Necesară pentru Spring Security și autentificare)
     Optional<Utilizator> findByUsername(String username);
 
-    // Căutare parțială cu paginare (Pe care am adăugat-o anterior pentru bara de căutare)
     Page<Utilizator> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 }

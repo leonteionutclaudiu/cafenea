@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -55,9 +56,11 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/register", "/mese/**", "/categorii/**").hasRole("ADMIN")
-                        .requestMatchers("/produse/nou", "/produse/editeaza/**", "/produse/sterge/**").hasRole("ADMIN")
-                        .requestMatchers("/ingrediente/nou", "/ingrediente/editeaza/**", "/ingrediente/sterge/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/produse", "/categorii", "/ingrediente").authenticated()
+                        .requestMatchers("/register", "/mese/**").hasRole("ADMIN")
+                        .requestMatchers("/categorii/salveaza", "/categorii/editeaza/**", "/categorii/sterge/**").hasRole("ADMIN")
+                        .requestMatchers("/produse/nou", "/produse/editeaza/**", "/produse/sterge/**", "/produse/salveaza").hasRole("ADMIN")
+                        .requestMatchers("/ingrediente/nou", "/ingrediente/editeaza/**", "/ingrediente/sterge/**", "/ingrediente/salveaza").hasRole("ADMIN")
                         .requestMatchers("/comenzi/sterge/**").hasRole("ADMIN")
                         .requestMatchers("/utilizatori/sterge/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/h2-console/**").hasRole("ADMIN")

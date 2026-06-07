@@ -2,6 +2,7 @@ package com.example.cafenea;
 
 import com.example.cafenea.model.CategorieProdus;
 import com.example.cafenea.repository.CategorieProdusRepository;
+import com.example.cafenea.repository.ProdusRepository;
 import com.example.cafenea.service.CategorieService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,9 @@ class CategorieServiceTest {
 
     @Mock
     private CategorieProdusRepository categorieProdusRepository;
+
+    @Mock
+    private ProdusRepository produsRepository;
 
     @InjectMocks
     private CategorieService categorieService;
@@ -64,6 +68,7 @@ class CategorieServiceTest {
     @Test
     void stergeCategorieExistenta() {
         when(categorieProdusRepository.existsById(1L)).thenReturn(true);
+        when(produsRepository.existsByCategorie_Id(1L)).thenReturn(false);
 
         categorieService.stergeCategorie(1L);
 
@@ -76,5 +81,15 @@ class CategorieServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> categorieService.stergeCategorie(9L));
         verify(categorieProdusRepository, never()).deleteById(9L);
+    }
+
+    @Test
+    void stergeCategorieCuProduseAsociateAruncaExceptie() {
+        when(categorieProdusRepository.existsById(1L)).thenReturn(true);
+        when(produsRepository.existsByCategorie_Id(1L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> categorieService.stergeCategorie(1L));
+
+        verify(categorieProdusRepository, never()).deleteById(1L);
     }
 }

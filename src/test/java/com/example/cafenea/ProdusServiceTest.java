@@ -1,6 +1,7 @@
 package com.example.cafenea;
 
 import com.example.cafenea.model.Produs;
+import com.example.cafenea.repository.ComandaRepository;
 import com.example.cafenea.repository.ProdusRepository;
 import com.example.cafenea.service.ProdusService;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,37 +21,36 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-@ActiveProfiles("test") // Activează profilul H2 pentru teste conform cerinței 3
+@ActiveProfiles("test")
 public class ProdusServiceTest {
 
     @Mock
-    private ProdusRepository produsRepository; // Simulăm repository-ul prin Mockito
+    private ProdusRepository produsRepository;
+
+    @Mock
+    private ComandaRepository comandaRepository;
 
     @InjectMocks
-    private ProdusService produsService; // Injectăm simularea în serviciul nostru
+    private ProdusService produsService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this); // Inițializăm simulările înainte de fiecare test
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void testSalveazaProdus() {
-        // 1. Pregătim datele de test
         Produs p = new Produs();
         p.setNume("Cappuccino");
         p.setPret(14.5);
 
-        // 2. Apelăm metoda din serviciu
         produsService.salveazaProdus(p);
 
-        // 3. Verificăm dacă serviciul a dat mai departe comanda de salvare către Repository
         verify(produsRepository, times(1)).save(p);
     }
 
     @Test
     void testGetProdusById() {
-        // 1. Pregătim un produs simulat în baza de date
         Produs p = new Produs();
         p.setId(1L);
         p.setNume("Espresso");
@@ -58,10 +58,8 @@ public class ProdusServiceTest {
 
         when(produsRepository.findById(1L)).thenReturn(Optional.of(p));
 
-        // 2. Apelăm serviciul
         Optional<Produs> rezultat = produsService.getProdusById(1L);
 
-        // 3. Verificări de siguranță (Assertions)
         assertTrue(rezultat.isPresent());
         assertEquals("Espresso", rezultat.get().getNume());
         assertEquals(10.0, rezultat.get().getPret());
@@ -69,16 +67,13 @@ public class ProdusServiceTest {
 
     @Test
     void testStergeProdusInexistentAruncaExceptie() {
-        // Simulăm că produsul cu ID-ul 999 NU există în baza de date
-        when(produsRepository.existsById(999L)).thenReturn(false);
+        when(produsRepository.findById(999L)).thenReturn(Optional.empty());
 
-        // Verificăm dacă serviciul aruncă excepția corectă (Exception Handling cerut la punctul 2)
         assertThrows(IllegalArgumentException.class, () -> {
             produsService.stergeProdus(999L);
         });
 
-        // Ne asigurăm că metoda de ștergere nu a fost apelată greșit
-        verify(produsRepository, never()).deleteById(999L);
+        verify(produsRepository, never()).delete(any(Produs.class));
     }
 
     @Test
@@ -90,11 +85,26 @@ public class ProdusServiceTest {
 
     @Test
     void testStergeProdusExistent() {
-        when(produsRepository.existsById(1L)).thenReturn(true);
+        Produs produs = new Produs();
+        produs.setId(1L);
+        when(produsRepository.findById(1L)).thenReturn(Optional.of(produs));
+        when(comandaRepository.existsByProduse_Id(1L)).thenReturn(false);
 
         produsService.stergeProdus(1L);
 
-        verify(produsRepository).deleteById(1L);
+        verify(produsRepository).delete(produs);
+    }
+
+    @Test
+    void testStergeProdusFolositInComandaAruncaExceptie() {
+        Produs produs = new Produs();
+        produs.setId(1L);
+        when(produsRepository.findById(1L)).thenReturn(Optional.of(produs));
+        when(comandaRepository.existsByProduse_Id(1L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> produsService.stergeProdus(1L));
+
+        verify(produsRepository, never()).delete(any(Produs.class));
     }
 
     @Test

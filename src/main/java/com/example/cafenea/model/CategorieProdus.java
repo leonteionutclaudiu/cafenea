@@ -18,9 +18,8 @@ public class CategorieProdus {
 
     @NotBlank(message = "Denumirea categoriei este obligatorie!")
     @Size(min = 3, message = "Denumirea trebuie să aibă cel puțin 3 caractere!")
-    private String denumire; // ex: Cafea, Bauturi Reci, Patiserie
+    private String denumire;
 
-    // O categorie are mai multe produse
     @OneToMany(mappedBy = "categorie")
     @ToString.Exclude
     private List<Produs> produse;

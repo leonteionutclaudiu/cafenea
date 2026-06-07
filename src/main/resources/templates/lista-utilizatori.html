@@ -6,26 +6,31 @@
     <title>Utilizatori & Fidelitate</title>
 </head>
 <body>
-<div id="utilizatoriContent" class="container mt-4 animate__animated animate__fadeIn">
-    <div class="glass-card p-4">
-        <h2 class="fw-bold mb-4 text-dark">👤 Personalul Cafenelei</h2>
+<div id="utilizatoriContent" class="container-xl">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-lg-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1 text-dark">👤 Personalul Cafenelei</h2>
+                <p class="text-secondary small mb-0">Conturi, roluri si profiluri angajati</p>
+            </div>
 
-        <a th:href="@{/register}"
-           sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')"
-           class="btn btn-success fw-bold">
-            ➕ Adaugă Personal Nou
-        </a>
+            <a th:href="@{/register}"
+               sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')"
+               class="btn btn-success fw-bold">
+                ➕ Adaugă Personal Nou
+            </a>
+        </div>
 
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-        <form th:action="@{/utilizatori}" method="get" class="row g-2 mb-4">
+        <form th:action="@{/utilizatori}" method="get" class="row g-2 mb-4 bg-body-tertiary p-3 rounded-4 border">
             <input type="hidden" name="sortField" th:value="${sortField}"/>
             <input type="hidden" name="sortDir" th:value="${sortDir}"/>
             <div class="col-md-8">
                 <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Caută utilizator după username..." />
             </div>
-            <div class="col-md-4 d-flex gap-2">
+            <div class="col-md-4 d-flex flex-column flex-sm-row gap-2">
                 <button type="submit" class="btn btn-dark w-100 fw-bold">🔍 Caută</button>
                 <a th:href="@{/utilizatori}" class="btn btn-outline-secondary w-100 fw-bold">Reset</a>
             </div>
@@ -35,11 +40,11 @@
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
                 <tr>
-                    <th style="width: 5%;">ID</th>
-                    <th style="width: 20%;">Username</th>
-                    <th style="width: 15%;">Rol</th>
-                    <th style="width: 25%;">Detalii Profil</th>
-                    <th class="text-center" style="width: 20%;">Acțiuni</th>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Rol</th>
+                    <th>Detalii Profil</th>
+                    <th class="text-center">Acțiuni</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -69,7 +74,7 @@
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
             <div class="text-muted small">
                 Total: <span th:text="${totalItems}" class="fw-bold"></span> utilizatori.
                 Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>

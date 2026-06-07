@@ -3,10 +3,11 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container p-4 bg-white rounded-4 shadow-sm animate__animated animate__fadeIn" style="max-width: 1000px;">
+<div class="container-lg">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-lg-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-        <ul class="nav nav-pills">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3">
+        <ul class="nav nav-pills gap-2">
             <li class="nav-item">
                 <a class="nav-link active fw-bold px-4 shadow-sm" href="/produse">📦 Catalog Produse</a>
             </li>
@@ -14,22 +15,22 @@
                 <a class="nav-link fw-bold px-4 text-secondary" href="/categorii">📁 Categorii Meniu</a>
             </li>
         </ul>
-        <form th:action="@{/logout}" method="post" class="m-0">
-            <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3">Ieșire 🚪</button>
-        </form>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">📋 Catalog Produse</h3>
             <p class="text-muted small m-0">Gestiunea stocurilor și a prețurilor</p>
         </div>
         <div sec:authorize="hasRole('ADMIN')">
-            <a href="/produse/nou" class="btn btn-success fw-bold btn-animate shadow-sm px-4">+ Adaugă Produs</a>
+            <a href="/produse/nou" class="btn btn-success fw-bold shadow-sm px-4">+ Adaugă Produs</a>
         </div>
     </div>
 
-    <form th:action="@{/produse}" method="get" class="row g-2 mb-4 bg-light p-3 rounded-3 border">
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <form th:action="@{/produse}" method="get" class="row g-2 mb-4 bg-body-tertiary p-3 rounded-4 border">
         <input type="hidden" name="sortField" th:value="${sortField}" />
         <input type="hidden" name="sortDir" th:value="${sortDir}" />
 
@@ -48,8 +49,8 @@
             </select>
         </div>
 
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100 fw-bold btn-animate">Filtrează</button>
+        <div class="col-md-3 d-flex flex-column flex-sm-row gap-2">
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Filtrează</button>
             <a href="/produse" class="btn btn-outline-secondary px-3">Reset</a>
         </div>
     </form>
@@ -78,7 +79,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="p : ${listaProduse}" class="animate__animated animate__fadeInUp">
+            <tr th:each="p : ${listaProduse}">
                 <td th:text="${p.id}" class="fw-bold text-muted">1</td>
                 <td th:text="${p.nume}" class="text-start fw-semibold text-dark">Cafea Latte</td>
 
@@ -95,7 +96,7 @@
 
                         <a th:href="@{/produse/sterge/{id}(id=${p.id})}"
                            th:onclick="return confirm('Sunteți sigur că doriți ștergerea definitivă a produsului?')"
-                           class="btn btn-sm btn-danger px-3 fw-medium btn-animate shadow-sm">Elimină</a>
+                           class="btn btn-sm btn-danger px-3 fw-medium shadow-sm">Elimină</a>
                     </div>
                     <div sec:authorize="!hasRole('ADMIN')">
                         <span class="badge bg-light text-muted border px-3 py-1">Doar vizualizare</span>
@@ -109,7 +110,7 @@
         </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
         <div class="text-muted small">
             Total: <span th:text="${totalItems}" class="fw-bold"></span> produse.
             Pagina <span th:text="${totalItems > 0 ? currentPage : 0}"></span> din <span th:text="${totalPages}"></span>
@@ -132,6 +133,7 @@
         </nav>
     </div>
 
+    </div>
 </div>
 </body>
 </html>

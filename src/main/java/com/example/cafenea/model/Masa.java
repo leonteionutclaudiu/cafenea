@@ -26,5 +26,5 @@ public class Masa {
 
     @NotBlank(message = "Statusul mesei este obligatoriu.")
     @Pattern(regexp = "LIBERA|OCUPATA", message = "Statusul mesei trebuie sa fie LIBERA sau OCUPATA.")
-    private String status; // Ex: LIBERA, OCUPATA
+    private String status;
 }

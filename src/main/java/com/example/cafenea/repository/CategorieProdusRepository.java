@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CategorieProdusRepository extends JpaRepository<CategorieProdus, Long> {
-    // JpaRepository ne oferă automat metodele de bază: findAll(), findById(), save(), deleteById()
 }

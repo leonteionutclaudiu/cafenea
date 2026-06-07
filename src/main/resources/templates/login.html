@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: iFrame(~{::body})}">
 <body>
-<div class="container d-flex justify-content-center mt-5">
-    <div class="card p-4 border-0 glass-card animate__animated animate__backInDown" style="width: 100%; max-width: 400px;">
+<div class="container-sm">
+    <div class="card p-4 border-0 shadow-sm rounded-4">
         <div class="text-center mb-4">
             <h3 class="fw-bold text-dark">🔐 Autentificare</h3>
             <p class="text-muted small">Introduceți contul salvat în baza de date</p>
         </div>
 
-        <div th:if="${param.error}" class="alert alert-danger text-center py-2 small animate__animated animate__shakeX">
+        <div th:if="${param.error}" class="alert alert-danger text-center py-2 small">
             Utilizator sau parolă incorectă!
         </div>
         <div th:if="${param.logout}" class="alert alert-success text-center py-2 small">
@@ -31,7 +31,7 @@
                 <input type="checkbox" name="remember-me" id="rememberMe" class="form-check-input">
                 <label class="form-check-label text-secondary small fw-medium" for="rememberMe">Ține-mă minte (14 zile)</label>
             </div>
-            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 btn-animate shadow-sm fs-5">Conectare</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm fs-5">Conectare</button>
         </form>
     </div>
 </div>
