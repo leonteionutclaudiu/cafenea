@@ -82,7 +82,7 @@ Tabela `comanda_produse` este tabela de legatura generata automat de JPA pentru 
 
 ```mermaid
 erDiagram
-    UTILIZATOR ||--o| PROFIL_UTILIZATOR : are
+    UTILIZATOR ||--|| PROFIL_UTILIZATOR : are
     UTILIZATOR ||--o{ COMANDA : inregistreaza
     CATEGORIE_PRODUS ||--o{ PRODUS : contine
     PRODUS }o--o{ INGREDIENT : foloseste
